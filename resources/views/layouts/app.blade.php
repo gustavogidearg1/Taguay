@@ -8,6 +8,12 @@
 
   <title>@yield('title')</title>
 
+  <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer" />
+
   <link rel="dns-prefetch" href="//fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
@@ -20,6 +26,7 @@
     .bg-custom-green { background-color: #fafafa !important; }
     body { background-color: #f3f4f6; }
   </style>
+@stack('styles')
 </head>
 
 <body>
@@ -50,7 +57,7 @@
         Ganaderia
       </a>
       <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="{{ route('haciendas.index') }}">Haciendas</a></li>
+        <li><a class="dropdown-item" href="{{ route('haciendas.index') }}"><i class="fa-solid fa-warehouse me-1"></i>Haciendas</a></li>
        {{--  <li><a class="dropdown-item" href="{{ route('ganadero.index') }}">Inicio Ganadero</a></li> --}}
       </ul>
     </li>
@@ -62,7 +69,7 @@
         Agricola
       </a>
       <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="{{ route('lluvias.index') }}">Lluvias</a></li>
+        <li><a class="dropdown-item" href="{{ route('lluvias.index') }}"><i class="fa-solid fa-cloud-rain me-1"></i>Lluvias</a></li>
         {{-- <li><a class="dropdown-item" href="{{ route('agricola.index') }}">Inicio AgrÃ­cola</a></li> --}}
       </ul>
     </li>
@@ -73,7 +80,20 @@
     <li class="nav-item dropdown">
       <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">ABM</a>
       <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="{{ route('users.index') }}">Usuarios</a></li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('establecimientos.index') }}">
+            <i class="fa-solid fa-building me-1"></i>Establecimientos</a>
+    </li>
+
+<li>
+    <a class="dropdown-item" href="{{ route('monedas.index') }}">
+        <i class="fa-solid fa-coins me-2"></i> Monedas
+    </a>
+</li>
+
+
+        <li><a class="dropdown-item" href="{{ route('users.index') }}"><i class="fa-solid fa-users me-1"></i>Usuarios</a></li>
       </ul>
     </li>
   @endrole
@@ -105,7 +125,7 @@
                 <li>
                   <a class="dropdown-item" href="{{ route('logout') }}"
                      onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="bi bi-box-arrow-right me-2"></i>{{ __('Cerrar sesiÃ³n') }}
+                    <i class="bi bi-box-arrow-right me-2"></i>{{ __('Cerrar sesion') }}
                   </a>
 
                   <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
@@ -128,5 +148,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+@stack('scripts')
 </body>
 </html>

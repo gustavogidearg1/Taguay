@@ -10,22 +10,30 @@
 
         <div class="mb-3">
           <label class="form-label">Nombre</label>
-          <input type="text" class="form-control @error('name') is-invalid @enderror"
-                 name="name" value="{{ old('name') }}" required>
+          <input type="text"
+                 class="form-control @error('name') is-invalid @enderror"
+                 name="name"
+                 value="{{ old('name') }}"
+                 required>
           @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
 
         <div class="mb-3">
           <label class="form-label">Email</label>
-          <input type="email" class="form-control @error('email') is-invalid @enderror"
-                 name="email" value="{{ old('email') }}" required>
+          <input type="email"
+                 class="form-control @error('email') is-invalid @enderror"
+                 name="email"
+                 value="{{ old('email') }}"
+                 required>
           @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
 
         <div class="mb-3">
           <label class="form-label">Contraseña</label>
-          <input type="password" class="form-control @error('password') is-invalid @enderror"
-                 name="password" required>
+          <input type="password"
+                 class="form-control @error('password') is-invalid @enderror"
+                 name="password"
+                 required>
           @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
 
@@ -34,26 +42,25 @@
           <input type="password" class="form-control" name="password_confirmation" required>
         </div>
 
-        {{-- ✅ ROL (Spatie) --}}
+        {{-- ROL BASE (1) --}}
         <div class="mb-3">
           <label class="form-label">Rol (base)</label>
-          @php $selectedRole = old('roles.0', 'cliente'); @endphp
-
           <select class="form-select @error('roles') is-invalid @enderror" name="roles[]">
+            @php
+              $selectedRole = old('roles.0', 'cliente');
+            @endphp
             @foreach($roles as $role)
               <option value="{{ $role->name }}" @selected($selectedRole === $role->name)>
                 {{ $role->name }}
               </option>
             @endforeach
           </select>
-
           @error('roles') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
 
-        {{-- ✅ PERMISOS / ÁREAS --}}
+        {{-- PERMISOS / ÁREAS --}}
         <div class="mb-3">
           <label class="form-label">Áreas habilitadas</label>
-
           @php
             $selectedPerms = old('permissions', []);
             $labels = [
@@ -64,7 +71,7 @@
           @endphp
 
           <div class="d-flex flex-wrap gap-3">
-            @foreach(($perms ?? collect()) as $perm)
+            @foreach($perms as $perm)
               <div class="form-check">
                 <input class="form-check-input"
                        type="checkbox"

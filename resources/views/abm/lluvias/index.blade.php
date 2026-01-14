@@ -75,7 +75,7 @@
     </table>
   </div>
   {{ $rows->links() }}
-  
+
   {{-- ===== Gráficos ===== --}}
 <div class="row g-3 mb-3">
   <div class="col-lg-6">

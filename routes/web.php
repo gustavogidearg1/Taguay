@@ -7,11 +7,15 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\HaciendaController;
 use App\Http\Controllers\LluviaController;
+use App\Http\Controllers\EstablecimientoController;
 
 use App\Http\Controllers\MargenBrutoController;
 use App\Http\Controllers\CosechaController;
 use App\Http\Controllers\FlujoFondoController;
 use App\Http\Controllers\TaguayController;
+
+//Referencias
+use App\Http\Controllers\MonedaController;
 
 Route::get('/', function () {
     return Auth::check()
@@ -33,16 +37,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cosecha', [CosechaController::class, 'index'])->name('cosecha');
     Route::get('/flujo-fondo', [FlujoFondoController::class, 'index'])->name('flujo-fondo');
 
-    // TEST (si ya no lo usás, sacalo)
-    Route::get('/test-flujo', function() {
-        return app()->make(FlujoFondoController::class)->index();
-    })->name('test-flujo');
 
     // ABM Usuarios (solo admin)
     Route::resource('users', UserController::class)->middleware('role:admin');
     Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])
         ->name('users.resetPassword')
         ->middleware('role:admin');
+
+        Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('establecimientos', EstablecimientoController::class)
+        ->except(['show']);
+});
 
     // Recursos por permisos (si querés que haciendas/lluvias dependan de permisos)
     Route::resource('haciendas', HaciendaController::class)->middleware('permission:ver_ganadero');
@@ -64,4 +69,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/comercial', fn() => view('comercial.index'))
         ->name('comercial.index')
         ->middleware('permission:ver_comercial');
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::get('/monedas', [MonedaController::class, 'index'])->name('monedas.index');
+    Route::post('/monedas', [MonedaController::class, 'store'])->name('monedas.store');
+    Route::put('/monedas/{moneda}', [MonedaController::class, 'update'])->name('monedas.update');
+    Route::delete('/monedas/{moneda}', [MonedaController::class, 'destroy'])->name('monedas.destroy');
 });
