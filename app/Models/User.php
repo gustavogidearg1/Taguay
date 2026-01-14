@@ -4,29 +4,28 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use Notifiable;
-    
-    
+    use Notifiable, HasRoles;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role_id'
+        'name',
+        'email',
+        'password',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
-    public function role()
+    protected function casts(): array
     {
-        return $this->belongsTo(Role::class);
-    }
-
-    // ✅ Dejar un único método
-    public function isAdmin(): bool
-    {
-        return in_array((int) $this->role_id, [1, 2], true); // 1=Super Admin, 2=Admin
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 }

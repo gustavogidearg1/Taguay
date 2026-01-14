@@ -6,23 +6,28 @@ use App\Models\User;
 
 class UserPolicy
 {
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
-        return $user->role_id === 1; // Solo Admin puede ver lista
+        return $user->hasRole('admin');
     }
 
-    public function create(User $user)
+    public function view(User $user, User $model): bool
     {
-        return $user->role_id === 1;
+        return $user->hasRole('admin');
     }
 
-    public function update(User $user, User $model)
+    public function create(User $user): bool
     {
-        return $user->role_id === 1;
+        return $user->hasRole('admin');
     }
 
-    public function delete(User $user, User $model)
+    public function update(User $user, User $model): bool
     {
-        return $user->role_id === 1;
+        return $user->hasRole('admin');
+    }
+
+    public function delete(User $user, User $model): bool
+    {
+        return $user->hasRole('admin');
     }
 }

@@ -3,112 +3,175 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rule;
+
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class UserController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-        // Aplica el middleware solo a las acciones espec铆ficas
-        $this->middleware('can:viewAny,App\Models\User')->only('index');
+
+        // 馃敀 ABM Usuarios: solo admin
+        // (requiere que est茅 registrado el middleware 'role' de Spatie en bootstrap/app.php)
+        $this->middleware('role:admin');
     }
 
-public function index(Request $request)
-{
-    $sort = $request->get('sort', 'name');
-    $order = $request->get('order', 'asc');
+    /* =========================
+       INDEX
+    ========================== */
+    public function index(Request $request)
+    {
+        $sort  = $request->get('sort', 'name');   // name | email | role
+        $order = $request->get('order', 'asc');   // asc | desc
 
-    // Si el orden es por 'role', necesitamos una relaci贸n con join
-    if ($sort === 'role') {
-        $users = User::with('role')
-            ->join('roles', 'users.role_id', '=', 'roles.id')
-            ->orderBy('roles.name', $order)
-            ->select('users.*') // importante para evitar conflicto en columnas
-            ->paginate(10)
-            ->appends(['sort' => $sort, 'order' => $order]);
-    } else {
-        $users = User::with('role')
-            ->orderBy($sort, $order)
-            ->paginate(10)
-            ->appends(['sort' => $sort, 'order' => $order]);
+        $q = User::query()->with('roles');
+
+        if ($sort === 'role') {
+            // Ordenar por el primer rol asignado (model_has_roles + roles)
+            $q->leftJoin('model_has_roles as mhr', function ($join) {
+                    $join->on('mhr.model_id', '=', 'users.id')
+                         ->where('mhr.model_type', '=', User::class);
+                })
+                ->leftJoin('roles', 'roles.id', '=', 'mhr.role_id')
+                ->orderBy('roles.name', $order)
+                ->select('users.*');
+        } else {
+            $allowed = ['name','email','id','created_at'];
+            if (!in_array($sort, $allowed, true)) $sort = 'name';
+            $q->orderBy($sort, $order);
+        }
+
+        $users = $q->paginate(10)->appends([
+            'sort' => $sort,
+            'order' => $order,
+        ]);
+
+        return view('users.index', compact('users', 'sort', 'order'));
     }
 
-    return view('users.index', compact('users', 'sort', 'order'));
-}
-
-
+    /* =========================
+       CREATE
+    ========================== */
     public function create()
     {
-        $roles = Role::all();
-        return view('users.create', compact('roles'));
+        $roles = Role::query()->orderBy('name')->get();
+        $perms = Permission::query()->orderBy('name')->get();
+
+        return view('users.create', compact('roles', 'perms'));
     }
 
+    /* =========================
+       STORE
+    ========================== */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role_id' => 'required|exists:roles,id'
+        $data = $request->validate([
+            'name'     => ['required','string','max:255'],
+            'email'    => ['required','string','email','max:255','unique:users,email'],
+            'password' => ['required','confirmed', Rules\Password::defaults()],
+
+            // Spatie
+            'roles'          => ['nullable','array'],
+            'roles.*'        => ['string', 'exists:roles,name'],
+            'permissions'    => ['nullable','array'],
+            'permissions.*'  => ['string', 'exists:permissions,name'],
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $request->role_id
+        $user = User::create([
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'password' => Hash::make($data['password']),
         ]);
+
+        // Rol por defecto si no eligi贸
+        $user->syncRoles($data['roles'] ?? ['cliente']);
+        $user->syncPermissions($data['permissions'] ?? []);
 
         return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente');
     }
 
+    /* =========================
+       EDIT
+    ========================== */
     public function edit(User $user)
     {
-        $roles = Role::all();
-        return view('users.edit', compact('user', 'roles'));
+        $roles = Role::query()->orderBy('name')->get();
+        $perms = Permission::query()->orderBy('name')->get();
+
+        $currentRoles = $user->roles->pluck('name')->values()->all();
+        $currentPerms = $user->getDirectPermissions()->pluck('name')->values()->all();
+        // si quer茅s mostrar permisos heredados por roles:
+        // $allPerms = $user->getAllPermissions()->pluck('name')->all();
+
+        return view('users.edit', compact('user','roles','perms','currentRoles','currentPerms'));
     }
 
+    /* =========================
+       UPDATE
+    ========================== */
     public function update(Request $request, User $user)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
-            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
-            'role_id' => 'required|exists:roles,id'
+        $data = $request->validate([
+            'name'     => ['required','string','max:255'],
+            'email'    => ['required','string','email','max:255', Rule::unique('users','email')->ignore($user->id)],
+            'password' => ['nullable','confirmed', Rules\Password::defaults()],
+
+            // Spatie
+            'roles'          => ['nullable','array'],
+            'roles.*'        => ['string', 'exists:roles,name'],
+            'permissions'    => ['nullable','array'],
+            'permissions.*'  => ['string', 'exists:permissions,name'],
         ]);
 
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role_id' => $request->role_id
-        ]);
+        $update = [
+            'name'  => $data['name'],
+            'email' => $data['email'],
+        ];
 
-        if ($request->password) {
-            $user->update(['password' => Hash::make($request->password)]);
+        if (!empty($data['password'])) {
+            $update['password'] = Hash::make($data['password']);
         }
+
+        $user->update($update);
+
+        // Si quer茅s forzar 1 rol base, est谩 bien con syncRoles.
+        // Si quer茅s permitir varios roles, syncRoles igual funciona con array.
+        $user->syncRoles($data['roles'] ?? ['cliente']);
+        $user->syncPermissions($data['permissions'] ?? []);
 
         return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente');
     }
 
+    /* =========================
+       DESTROY
+    ========================== */
     public function destroy(User $user)
     {
+        // Opcional: no permitir borrarse a s铆 mismo
+        if (auth()->id() === $user->id) {
+            return back()->with('error', 'No pod茅s eliminar tu propio usuario.');
+        }
+
         $user->delete();
+
         return redirect()->route('users.index')->with('success', 'Usuario eliminado exitosamente');
     }
 
-public function resetPassword(User $user)
-{
-    $nuevaClave = 'usuario123';
-    $user->password = Hash::make($nuevaClave);
-    $user->save();
+    /* =========================
+       RESET PASSWORD
+    ========================== */
+    public function resetPassword(User $user)
+    {
+        $nuevaClave = 'usuario123';
+        $user->password = Hash::make($nuevaClave);
+        $user->save();
 
-    return redirect()->back()->with('success', 'Contraseña restablecida. Nueva clave: ' . $nuevaClave);
-}
-
-
-
+        return redirect()->back()->with('success', 'Contrase帽a restablecida. Nueva clave: ' . $nuevaClave);
+    }
 }

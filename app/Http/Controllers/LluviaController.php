@@ -16,6 +16,29 @@ class LluviaController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+
+        // (opcional) si querés reforzar acá también:
+        // $this->middleware('permission:ver_agricola');
+
+        // Esto protege show/edit/update/destroy con policy automáticamente
+        // (Necesitás el LluviaPolicy abajo, te lo dejo también)
+        $this->authorizeResource(Lluvia::class, 'lluvia');
+    }
+
+    /**
+     * Admin ve todo. No-admin ve solo sus registros.
+     */
+    private function applyOwnershipScope($query)
+    {
+        $u = Auth::user();
+
+        // Admin ve todo
+        if ($u && $u->hasRole('admin')) {
+            return $query;
+        }
+
+        // No-admin: solo lo suyo
+        return $query->where('user_id', Auth::id());
     }
 
     /**
@@ -24,9 +47,8 @@ class LluviaController extends Controller
      */
     private function publishToPublicStorage(string $relativePath): void
     {
-        // Ej: $relativePath = 'lluvias/archivo.jpg'
-        $source = Storage::disk('public')->path($relativePath); // .../storage/app/public/lluvias/archivo.jpg
-        $dest   = public_path('storage/' . $relativePath);      // .../public/storage/lluvias/archivo.jpg
+        $source = Storage::disk('public')->path($relativePath);
+        $dest   = public_path('storage/' . $relativePath);
 
         @mkdir(dirname($dest), 0755, true);
 
@@ -36,9 +58,6 @@ class LluviaController extends Controller
         }
     }
 
-    /**
-     * Borra la copia pública (public/storage/...)
-     */
     private function deletePublicCopy(?string $relativePath): void
     {
         if (!$relativePath) return;
@@ -51,9 +70,9 @@ class LluviaController extends Controller
 
     public function index(Request $request)
     {
+        // Para filtros (admin ve todos, no-admin igual puede filtrar sus datos)
         $establecimientos = Establecimiento::orderBy('nombre')->get();
 
-        // Defaults: año actual si no hay filtros
         $desde = $request->input('desde');
         $hasta = $request->input('hasta');
 
@@ -63,6 +82,9 @@ class LluviaController extends Controller
         }
 
         $q = Lluvia::query()->with(['establecimiento', 'user']);
+
+        // 👇 SOLO LO SUYO si no es admin
+        $q = $this->applyOwnershipScope($q);
 
         if ($request->filled('establecimiento_id')) {
             $q->where('establecimiento_id', $request->establecimiento_id);
@@ -77,7 +99,7 @@ class LluviaController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        // Gráficos (sin ORDER BY)
+        // Gráficos
         $base = clone $q;
 
         $porEstablecimiento = (clone $base)
@@ -138,12 +160,11 @@ class LluviaController extends Controller
 
         if ($r->hasFile('archivo')) {
             $data['archivo_path'] = $r->file('archivo')->store('lluvias', 'public');
-
-            // ✅ Copia física a public/storage para evitar 403 por symlink bloqueado
             $this->publishToPublicStorage($data['archivo_path']);
         }
 
         $data['user_id'] = Auth::id();
+
         if (Schema::hasColumn('lluvias', 'company_id')) {
             $data['company_id'] = Auth::user()?->company_id;
         }
@@ -170,16 +191,15 @@ class LluviaController extends Controller
 
             \Log::info('Lluvia mail enviado OK');
         } catch (\Throwable $e) {
-            \Log::error('Lluvia mail error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            \Log::error('Lluvia mail error: ' . $e->getMessage());
         }
 
-        return redirect()->route('lluvias.show', $lluvia)
-            ->with('ok', 'Registro de lluvia creado.');
+        return redirect()->route('lluvias.show', $lluvia)->with('ok', 'Registro de lluvia creado.');
     }
 
     public function show(Lluvia $lluvia)
     {
-        $lluvia->load('establecimiento');
+        $lluvia->load('establecimiento', 'user');
         return view('abm.lluvias.show', compact('lluvia'));
     }
 
@@ -206,22 +226,18 @@ class LluviaController extends Controller
         ]);
 
         if ($r->hasFile('archivo')) {
-            // borrar anterior (storage + copia pública)
             if ($lluvia->archivo_path) {
                 Storage::disk('public')->delete($lluvia->archivo_path);
                 $this->deletePublicCopy($lluvia->archivo_path);
             }
 
             $data['archivo_path'] = $r->file('archivo')->store('lluvias', 'public');
-
-            // ✅ Copia física
             $this->publishToPublicStorage($data['archivo_path']);
         }
 
         $lluvia->update($data);
 
-        return redirect()->route('lluvias.show', $lluvia)
-            ->with('ok', 'Registro de lluvia actualizado.');
+        return redirect()->route('lluvias.show', $lluvia)->with('ok', 'Registro de lluvia actualizado.');
     }
 
     public function destroy(Lluvia $lluvia)

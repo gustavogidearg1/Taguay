@@ -2,38 +2,89 @@
 
 @section('content')
 <div class="container">
-    <div class="card">
-        <div class="card-header">Crear Nuevo Usuario</div>
-        <div class="card-body">
-            <form method="POST" action="{{ route('users.store') }}">
-                @csrf
-                <div class="mb-3">
-                    <label for="name" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="name" name="name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password_confirmation" class="form-label">Confirmar Contraseña</label>
-                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
-                </div>
-                <div class="mb-3">
-                    <label for="role_id" class="form-label">Rol</label>
-                    <select class="form-select" id="role_id" name="role_id" required>
-                        @foreach($roles as $role)
-                        <option value="{{ $role->id }}">{{ $role->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Guardar</button>
-            </form>
+  <div class="card">
+    <div class="card-header">Crear Nuevo Usuario</div>
+    <div class="card-body">
+      <form method="POST" action="{{ route('users.store') }}">
+        @csrf
+
+        <div class="mb-3">
+          <label class="form-label">Nombre</label>
+          <input type="text" class="form-control @error('name') is-invalid @enderror"
+                 name="name" value="{{ old('name') }}" required>
+          @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control @error('email') is-invalid @enderror"
+                 name="email" value="{{ old('email') }}" required>
+          @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Contraseña</label>
+          <input type="password" class="form-control @error('password') is-invalid @enderror"
+                 name="password" required>
+          @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Confirmar Contraseña</label>
+          <input type="password" class="form-control" name="password_confirmation" required>
+        </div>
+
+        {{-- ✅ ROL (Spatie) --}}
+        <div class="mb-3">
+          <label class="form-label">Rol (base)</label>
+          @php $selectedRole = old('roles.0', 'cliente'); @endphp
+
+          <select class="form-select @error('roles') is-invalid @enderror" name="roles[]">
+            @foreach($roles as $role)
+              <option value="{{ $role->name }}" @selected($selectedRole === $role->name)>
+                {{ $role->name }}
+              </option>
+            @endforeach
+          </select>
+
+          @error('roles') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        {{-- ✅ PERMISOS / ÁREAS --}}
+        <div class="mb-3">
+          <label class="form-label">Áreas habilitadas</label>
+
+          @php
+            $selectedPerms = old('permissions', []);
+            $labels = [
+              'ver_agricola'  => 'Agrícola',
+              'ver_ganadero'  => 'Ganadero',
+              'ver_comercial' => 'Comercial',
+            ];
+          @endphp
+
+          <div class="d-flex flex-wrap gap-3">
+            @foreach(($perms ?? collect()) as $perm)
+              <div class="form-check">
+                <input class="form-check-input"
+                       type="checkbox"
+                       name="permissions[]"
+                       id="perm_{{ $perm->name }}"
+                       value="{{ $perm->name }}"
+                       @checked(in_array($perm->name, $selectedPerms))>
+                <label class="form-check-label" for="perm_{{ $perm->name }}">
+                  {{ $labels[$perm->name] ?? $perm->name }}
+                </label>
+              </div>
+            @endforeach
+          </div>
+
+          @error('permissions') <div class="text-danger small">{{ $message }}</div> @enderror
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </form>
     </div>
+  </div>
 </div>
 @endsection

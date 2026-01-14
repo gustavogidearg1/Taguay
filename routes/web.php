@@ -1,15 +1,17 @@
 <?php
 
-use App\Http\Controllers\CosechaController;
-use App\Http\Controllers\FlujoFondoController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\MargenBrutoController;
-use App\Http\Controllers\TaguayController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\HaciendaController;
 use App\Http\Controllers\LluviaController;
+
+use App\Http\Controllers\MargenBrutoController;
+use App\Http\Controllers\CosechaController;
+use App\Http\Controllers\FlujoFondoController;
+use App\Http\Controllers\TaguayController;
 
 Route::get('/', function () {
     return Auth::check()
@@ -19,45 +21,47 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::get('/margen-bruto', [MargenBrutoController::class, 'index'])->name('margen-bruto');
-
-
-// Ruta para la página de Cosecha
-Route::get('/cosecha', [CosechaController::class, 'index'])->name('cosecha');
-
-// Ruta para la página de Flujo de Fondo
-Route::get('/flujo-fondo', [FlujoFondoController::class, 'index'])->name('flujo-fondo');
-
-// Definir la ruta para acceder al JSON
-Route::get('/getJsonData', [TaguayController::class, 'getJsonData']);
-
-// En routes/web.php
-Route::get('/test-flujo', function() {
-    return app()->make('App\Http\Controllers\FlujoFondoController')->index();
-});
+// PÃºblicas o generales (si querÃ©s que requieran login, movelas al group auth)
+Route::get('/getJsonData', [TaguayController::class, 'getJsonData'])->name('getJsonData');
 
 Route::middleware(['auth'])->group(function () {
-    // Ruta resource usando la política directamente
-    Route::resource('users', UserController::class)
-         ->middleware('can:viewAny,App\Models\User');
+
+    // Pantallas generales
+    Route::get('/margen-bruto', [MargenBrutoController::class, 'index'])->name('margen-bruto');
+    Route::get('/cosecha', [CosechaController::class, 'index'])->name('cosecha');
+    Route::get('/flujo-fondo', [FlujoFondoController::class, 'index'])->name('flujo-fondo');
+
+    // TEST (si ya no lo usÃ¡s, sacalo)
+    Route::get('/test-flujo', function() {
+        return app()->make(FlujoFondoController::class)->index();
+    })->name('test-flujo');
+
+    // ABM Usuarios (solo admin)
+    Route::resource('users', UserController::class)->middleware('role:admin');
+    Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])
+        ->name('users.resetPassword')
+        ->middleware('role:admin');
+
+    // Recursos por permisos (si querÃ©s que haciendas/lluvias dependan de permisos)
+    Route::resource('haciendas', HaciendaController::class)->middleware('permission:ver_ganadero');
+    Route::resource('lluvias', LluviaController::class)->middleware('permission:ver_agricola');
+
+    Route::post('/lluvias/{lluvia}/resend-mail', [LluviaController::class, 'resendMail'])
+        ->name('lluvias.resendMail')
+        ->middleware('permission:ver_agricola');
+
+    // Dashboards simples
+    Route::get('/agricola', fn() => view('agricola.index'))
+        ->name('agricola.index')
+        ->middleware('permission:ver_agricola');
+
+    Route::get('/ganadero', fn() => view('ganadero.index'))
+        ->name('ganadero.index')
+        ->middleware('permission:ver_ganadero');
+
+    Route::get('/comercial', fn() => view('comercial.index'))
+        ->name('comercial.index')
+        ->middleware('permission:ver_comercial');
 });
-
-Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])
-    ->name('users.resetPassword');
-
-Route::middleware(['auth'])->group(function () {
-    Route::resource('haciendas', HaciendaController::class);
-});
-
-Route::middleware(['auth'])
-->group(function(){
-Route::resource('lluvias', LluviaController::class);
-});
-
-Route::post('/lluvias/{lluvia}/resend-mail', [LluviaController::class, 'resendMail'])
-     ->name('lluvias.resendMail')
-     ->middleware('auth');
-
-

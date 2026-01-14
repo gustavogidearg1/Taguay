@@ -3,9 +3,13 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Models\Lluvia;
+use App\Models\Hacienda;
 use App\Policies\UserPolicy;
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use App\Policies\LluviaPolicy;
+use App\Policies\HaciendaPolicy;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -16,18 +20,19 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         User::class => UserPolicy::class,
+        Lluvia::class => LluviaPolicy::class,
+        Hacienda::class => HaciendaPolicy::class,
     ];
 
     /**
      * Register any authentication / authorization services.
      */
-    public function boot()
+public function boot(): void
 {
     $this->registerPolicies();
 
-    // Comenta o elimina temporalmente la definición del gate
-    // Gate::define('manage-users', function (User $user) {
-    //     return $user->role_id === 1;
-    // });
+    Gate::before(function ($user, $ability) {
+        return $user->hasRole('admin') ? true : null;
+    });
 }
 }

@@ -42,67 +42,45 @@
       <div class="collapse navbar-collapse" id="navbarMain">
 
         {{-- Left --}}
-        <ul class="navbar-nav me-auto">
-          @auth
+<ul class="navbar-nav me-auto">
+  @auth
+  @can('ver_ganadero')
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        Ganaderia
+      </a>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{ route('haciendas.index') }}">Haciendas</a></li>
+       {{--  <li><a class="dropdown-item" href="{{ route('ganadero.index') }}">Inicio Ganadero</a></li> --}}
+      </ul>
+    </li>
+  @endcan
 
-            {{-- Ganadería --}}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle {{ request()->routeIs('haciendas.*') ? 'fw-semibold' : '' }}"
-                 href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Ganadería
-              </a>
-              <ul class="dropdown-menu">
-                @if (Route::has('haciendas.index'))
-                  <li><a class="dropdown-item" href="{{ route('haciendas.index') }}">Haciendas</a></li>
-                @else
-                  <li><span class="dropdown-item-text text-muted">Haciendas (sin ruta)</span></li>
-                @endif
-              </ul>
-            </li>
+  @can('ver_agricola')
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        Agricola
+      </a>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{ route('lluvias.index') }}">Lluvias</a></li>
+        {{-- <li><a class="dropdown-item" href="{{ route('agricola.index') }}">Inicio AgrÃ­cola</a></li> --}}
+      </ul>
+    </li>
+  @endcan
 
-            {{-- Agrícola --}}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle {{ request()->routeIs('lluvias.*') ? 'fw-semibold' : '' }}"
-                 href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Agrícola
-              </a>
-              <ul class="dropdown-menu">
-                @if (Route::has('lluvias.index'))
-                  <li><a class="dropdown-item" href="{{ route('lluvias.index') }}">Lluvias</a></li>
-                @else
-                  <li><span class="dropdown-item-text text-muted">Lluvias (sin ruta)</span></li>
-                @endif
-              </ul>
-            </li>
 
-            {{-- ABM (solo admin) --}}
-            @if ((Auth::user()->role_id ?? null) == 1)
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle {{ request()->is('abm/*') || request()->routeIs('users.*') ? 'fw-semibold' : '' }}"
-                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  ABM
-                </a>
-                <ul class="dropdown-menu">
-                  @if (Route::has('users.index'))
-                    <li>
-                      <a class="dropdown-item {{ request()->routeIs('users.*') ? 'active' : '' }}"
-                         href="{{ route('users.index') }}">
-                        <i class="bi bi-people-fill me-2"></i>Usuarios
-                      </a>
-                    </li>
-                  @else
-                    <li><span class="dropdown-item-text text-muted">Usuarios (sin ruta)</span></li>
-                  @endif
+  @role('admin')
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">ABM</a>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{ route('users.index') }}">Usuarios</a></li>
+      </ul>
+    </li>
+  @endrole
+@endauth
 
-                  {{-- Futuro: agregás más ABM acá --}}
-                  {{-- <li><a class="dropdown-item" href="#">Provincias</a></li> --}}
-                  {{-- <li><a class="dropdown-item" href="#">Localidades</a></li> --}}
-                </ul>
-              </li>
-            @endif
+</ul>
 
-          @endauth
-        </ul>
 
         {{-- Right --}}
         <ul class="navbar-nav ms-auto">
@@ -127,7 +105,7 @@
                 <li>
                   <a class="dropdown-item" href="{{ route('logout') }}"
                      onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="bi bi-box-arrow-right me-2"></i>{{ __('Cerrar sesión') }}
+                    <i class="bi bi-box-arrow-right me-2"></i>{{ __('Cerrar sesiÃ³n') }}
                   </a>
 
                   <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
