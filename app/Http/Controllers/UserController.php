@@ -26,34 +26,54 @@ class UserController extends Controller
        INDEX
     ========================== */
     public function index(Request $request)
-    {
-        $sort  = $request->get('sort', 'name');   // name | email | role
-        $order = $request->get('order', 'asc');   // asc | desc
+{
+    $search = trim((string) $request->get('q', ''));
+    $sort   = $request->get('sort', 'name');   // name | email | role
+    $order  = $request->get('order', 'asc');   // asc | desc
+    $perPage = (int) $request->get('per_page', 10);
+    if (!in_array($perPage, [10,20,50,100], true)) $perPage = 10;
 
-        $q = User::query()->with('roles');
+    $q = User::query()
+        ->with(['roles', 'permissions']); // permissions = direct permissions
 
-        if ($sort === 'role') {
-            // Ordenar por el primer rol asignado (model_has_roles + roles)
-            $q->leftJoin('model_has_roles as mhr', function ($join) {
-                    $join->on('mhr.model_id', '=', 'users.id')
-                         ->where('mhr.model_type', '=', User::class);
-                })
-                ->leftJoin('roles', 'roles.id', '=', 'mhr.role_id')
-                ->orderBy('roles.name', $order)
-                ->select('users.*');
-        } else {
-            $allowed = ['name','email','id','created_at'];
-            if (!in_array($sort, $allowed, true)) $sort = 'name';
-            $q->orderBy($sort, $order);
-        }
-
-        $users = $q->paginate(10)->appends([
-            'sort' => $sort,
-            'order' => $order,
-        ]);
-
-        return view('users.index', compact('users', 'sort', 'order'));
+    if ($search !== '') {
+        $q->where(function ($w) use ($search) {
+            $w->where('name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%");
+        });
     }
+
+    if ($sort === 'role') {
+        // orden por rol (join con tabla de spatie roles)
+        $q->leftJoin('model_has_roles as mhr', function ($join) {
+                $join->on('mhr.model_id', '=', 'users.id')
+                     ->where('mhr.model_type', '=', \App\Models\User::class);
+            })
+          ->leftJoin('roles', 'roles.id', '=', 'mhr.role_id')
+          ->orderBy('roles.name', $order)
+          ->select('users.*');
+    } else {
+        $allowed = ['name','email','id','created_at'];
+        if (!in_array($sort, $allowed, true)) $sort = 'name';
+        $q->orderBy($sort, $order);
+    }
+
+    $users = $q->paginate($perPage)->appends([
+        'q' => $search,
+        'sort' => $sort,
+        'order' => $order,
+        'per_page' => $perPage,
+    ]);
+
+    // labels para permisos (áreas)
+    $permLabels = [
+        'ver_agricola'  => 'Agrícola',
+        'ver_ganadero'  => 'Ganadero',
+        'ver_comercial' => 'Comercial',
+    ];
+
+    return view('users.index', compact('users','search','sort','order','perPage','permLabels'));
+}
 
     /* =========================
        CREATE
@@ -116,37 +136,41 @@ class UserController extends Controller
        UPDATE
     ========================== */
     public function update(Request $request, User $user)
-    {
-        $data = $request->validate([
-            'name'     => ['required','string','max:255'],
-            'email'    => ['required','string','email','max:255', Rule::unique('users','email')->ignore($user->id)],
-            'password' => ['nullable','confirmed', Rules\Password::defaults()],
+{
+    $rules = [
+        'name'  => ['required','string','max:255'],
+        'email' => ['required','string','email','max:255', Rule::unique('users','email')->ignore($user->id)],
 
-            // Spatie
-            'roles'          => ['nullable','array'],
-            'roles.*'        => ['string', 'exists:roles,name'],
-            'permissions'    => ['nullable','array'],
-            'permissions.*'  => ['string', 'exists:permissions,name'],
-        ]);
+        // Spatie
+        'roles'          => ['nullable','array'],
+        'roles.*'        => ['string','exists:roles,name'],
+        'permissions'    => ['nullable','array'],
+        'permissions.*'  => ['string','exists:permissions,name'],
+    ];
 
-        $update = [
-            'name'  => $data['name'],
-            'email' => $data['email'],
-        ];
-
-        if (!empty($data['password'])) {
-            $update['password'] = Hash::make($data['password']);
-        }
-
-        $user->update($update);
-
-        // Si querés forzar 1 rol base, está bien con syncRoles.
-        // Si querés permitir varios roles, syncRoles igual funciona con array.
-        $user->syncRoles($data['roles'] ?? ['cliente']);
-        $user->syncPermissions($data['permissions'] ?? []);
-
-        return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente');
+    // ✅ Solo validar password si el usuario escribió algo
+    if ($request->filled('password')) {
+        $rules['password'] = ['required','confirmed', Rules\Password::defaults()];
     }
+
+    $data = $request->validate($rules);
+
+    $update = [
+        'name'  => $data['name'],
+        'email' => $data['email'],
+    ];
+
+    if ($request->filled('password')) {
+        $update['password'] = Hash::make($request->password);
+    }
+
+    $user->update($update);
+
+    $user->syncRoles($data['roles'] ?? ['cliente']);
+    $user->syncPermissions($data['permissions'] ?? []);
+
+    return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente');
+}
 
     /* =========================
        DESTROY
