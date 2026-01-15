@@ -16,6 +16,7 @@ use App\Http\Controllers\TaguayController;
 
 //Referencias
 use App\Http\Controllers\MonedaController;
+use App\Http\Controllers\CultivoController;
 
 Route::get('/', function () {
     return Auth::check()
@@ -76,4 +77,11 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::post('/monedas', [MonedaController::class, 'store'])->name('monedas.store');
     Route::put('/monedas/{moneda}', [MonedaController::class, 'update'])->name('monedas.update');
     Route::delete('/monedas/{moneda}', [MonedaController::class, 'destroy'])->name('monedas.destroy');
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::get('/cultivos', [CultivoController::class, 'index'])->name('cultivos.index');
+    Route::post('/cultivos', [CultivoController::class, 'store'])->name('cultivos.store');
+    Route::put('/cultivos/{cultivo}', [CultivoController::class, 'update'])->name('cultivos.update');
+    Route::delete('/cultivos/{cultivo}', [CultivoController::class, 'destroy'])->name('cultivos.destroy');
 });
