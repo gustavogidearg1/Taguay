@@ -17,6 +17,7 @@ use App\Http\Controllers\TaguayController;
 //Referencias
 use App\Http\Controllers\MonedaController;
 use App\Http\Controllers\CultivoController;
+use App\Http\Controllers\CampaniaController;
 
 Route::get('/', function () {
     return Auth::check()
@@ -84,4 +85,11 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::post('/cultivos', [CultivoController::class, 'store'])->name('cultivos.store');
     Route::put('/cultivos/{cultivo}', [CultivoController::class, 'update'])->name('cultivos.update');
     Route::delete('/cultivos/{cultivo}', [CultivoController::class, 'destroy'])->name('cultivos.destroy');
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::get('/campanias', [CampaniaController::class, 'index'])->name('campanias.index');
+    Route::post('/campanias', [CampaniaController::class, 'store'])->name('campanias.store');
+    Route::put('/campanias/{campania}', [CampaniaController::class, 'update'])->name('campanias.update');
+    Route::delete('/campanias/{campania}', [CampaniaController::class, 'destroy'])->name('campanias.destroy');
 });

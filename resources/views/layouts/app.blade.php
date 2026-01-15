@@ -98,6 +98,12 @@
   </a>
 </li>
 
+<li>
+  <a class="dropdown-item" href="{{ route('campanias.index') }}">
+    <i class="fa-solid fa-calendar-days me-2"></i> Campañas
+  </a>
+</li>
+
 
         <li><a class="dropdown-item" href="{{ route('users.index') }}"><i class="fa-solid fa-users me-1"></i>Usuarios</a></li>
       </ul>
