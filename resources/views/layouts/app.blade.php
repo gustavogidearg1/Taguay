@@ -92,6 +92,12 @@
     </a>
 </li>
 
+<li>
+  <a class="dropdown-item" href="{{ route('cultivos.index') }}">
+    <i class="fa-solid fa-seedling me-2"></i> Cultivos
+  </a>
+</li>
+
 
         <li><a class="dropdown-item" href="{{ route('users.index') }}"><i class="fa-solid fa-users me-1"></i>Usuarios</a></li>
       </ul>
