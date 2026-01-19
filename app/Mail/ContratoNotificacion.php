@@ -2,52 +2,27 @@
 
 namespace App\Mail;
 
+use App\Models\Contrato;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class ContratoNotificacion extends Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(
+        public Contrato $contrato,
+        public string $accion // 'creado' | 'actualizado'
+    ) {}
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
+    public function build()
     {
-        return new Envelope(
-            subject: 'Contrato Notificacion',
-        );
-    }
+        $subject = $this->accion === 'creado'
+            ? "Contrato creado #{$this->contrato->nro_contrato}"
+            : "Contrato actualizado #{$this->contrato->nro_contrato}";
 
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'view.name',
-        );
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
+        return $this->subject($subject)
+            ->view('emails.contratos.notificacion');
     }
 }
