@@ -13,6 +13,9 @@ use App\Http\Controllers\MargenBrutoController;
 use App\Http\Controllers\CosechaController;
 use App\Http\Controllers\FlujoFondoController;
 use App\Http\Controllers\TaguayController;
+use App\Http\Controllers\ContratoController;
+use App\Http\Controllers\OrganizacionController;
+
 
 //Referencias
 use App\Http\Controllers\MonedaController;
@@ -93,3 +96,9 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::put('/campanias/{campania}', [CampaniaController::class, 'update'])->name('campanias.update');
     Route::delete('/campanias/{campania}', [CampaniaController::class, 'destroy'])->name('campanias.destroy');
 });
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('contratos', ContratoController::class);
+});
+
+Route::middleware('auth')->get('/api/organizaciones', [OrganizacionController::class, 'index']);

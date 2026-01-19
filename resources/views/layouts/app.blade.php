@@ -75,6 +75,32 @@
     </li>
   @endcan
 
+  @auth
+  @if(auth()->user()->hasRole('admin') || auth()->user()->can('ver_comercial'))
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        Comerciales
+      </a>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item" href="{{ route('contratos.index') }}">
+            <i class="fa-solid fa-file-contract me-2"></i> Contratos
+          </a>
+        </li>
+
+        {{-- acá vas agregando más cosas comerciales --}}
+        {{-- <li>
+          <a class="dropdown-item" href="{{ route('clientes.index') }}">
+            <i class="fa-solid fa-handshake me-2"></i> Clientes
+          </a>
+        </li> --}}
+      </ul>
+    </li>
+  @endif
+@endauth
+
+
 
   @role('admin')
     <li class="nav-item dropdown">

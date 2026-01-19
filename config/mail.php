@@ -113,4 +113,5 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'contratos_cc' => env('CONTRATOS_MAIL_CC', null),
 ];
