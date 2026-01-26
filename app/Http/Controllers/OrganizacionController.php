@@ -2,42 +2,86 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Organizacion;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
 
 class OrganizacionController extends Controller
 {
     public function index(Request $request)
     {
-        // opcional: permitir filtrar por updatedSince
-        $updatedSince = (string) $request->query('updatedSince', '');
+        $q = trim((string) $request->query('q', ''));
+        $activo = $request->query('activo', ''); // '' | '1' | '0'
 
-        // Cachear respuesta 10 min para no golpear Finneg siempre
-        $cacheKey = 'finneg.organizaciones.' . md5($updatedSince);
+        $organizaciones = Organizacion::query()
+            ->when($q !== '', function ($qq) use ($q) {
+                $qq->where(function ($w) use ($q) {
+                    $w->where('name', 'like', "%{$q}%")
+                      ->orWhere('codigo', 'like', "%{$q}%");
+                });
+            })
+            ->when($activo !== '', fn ($qq) => $qq->where('activo', (int) $activo))
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($updatedSince) {
+        return view('abm.organizaciones.index', compact('organizaciones', 'q', 'activo'));
+    }
 
-            // 1) Token cacheado 10 min
-            $token = Cache::remember('finneg.access_token', now()->addMinutes(10), function () {
-                $url = "https://api.finneg.com/api/oauth/token?grant_type=client_credentials&client_id=40901e9dcf89fc6da790af0e3c2a3cd2&client_secret=86514f5236398dbd16f0ded48d1b9b12";
-                $r = Http::withHeaders(['Accept' => 'application/json'])->get($url);
+    public function create()
+    {
+        return view('abm.organizaciones.create');
+    }
 
-                $t = trim($r->body()); // Finneg devuelve token como texto plano
-                if ($t === '') abort(500, 'No se pudo obtener token Finneg');
-                return $t;
-            });
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'codigo'      => 'required|string|max:50|unique:organizaciones,codigo',
+            'name'        => 'required|string|max:150|unique:organizaciones,name',
+            'fecha'       => 'required|date',
+            'descripcion' => 'nullable|string',
+            'activo'      => 'required|boolean',
+        ]);
 
-            // 2) Pegar a organizaciones
-            $url = "https://api.finneg.com/api/Organizacion/list?updatedSince=" . urlencode($updatedSince) . "&ACCESS_TOKEN=" . urlencode($token);
+        Organizacion::create($data);
 
-            $resp = Http::withHeaders(['Accept' => 'application/json'])->get($url);
+        return redirect()
+            ->route('organizaciones.index')
+            ->with('success', 'Organización creada exitosamente.');
+    }
 
-            if (!$resp->ok()) {
-                abort($resp->status(), 'Error Finneg Organizacion/list');
-            }
+    public function show(Organizacion $organizacion)
+    {
+        return view('abm.organizaciones.show', compact('organizacion'));
+    }
 
-            return $resp->json();
-        });
+    public function edit(Organizacion $organizacion)
+    {
+        return view('abm.organizaciones.edit', compact('organizacion'));
+    }
+
+    public function update(Request $request, Organizacion $organizacion)
+    {
+        $data = $request->validate([
+            'codigo'      => 'required|string|max:50|unique:organizaciones,codigo,' . $organizacion->id,
+            'name'        => 'required|string|max:150|unique:organizaciones,name,' . $organizacion->id,
+            'fecha'       => 'required|date',
+            'descripcion' => 'nullable|string',
+            'activo'      => 'required|boolean',
+        ]);
+
+        $organizacion->update($data);
+
+        return redirect()
+            ->route('organizaciones.index')
+            ->with('success', 'Organización actualizada exitosamente.');
+    }
+
+    public function destroy(Organizacion $organizacion)
+    {
+        $organizacion->delete();
+
+        return redirect()
+            ->route('organizaciones.index')
+            ->with('success', 'Organización eliminada exitosamente.');
     }
 }

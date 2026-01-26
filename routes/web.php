@@ -15,6 +15,9 @@ use App\Http\Controllers\FlujoFondoController;
 use App\Http\Controllers\TaguayController;
 use App\Http\Controllers\ContratoController;
 use App\Http\Controllers\OrganizacionController;
+use App\Http\Controllers\Abm\TipoProductoController;
+use App\Http\Controllers\Abm\UnidadController;
+use App\Http\Controllers\Abm\ProductoController;
 
 
 //Referencias
@@ -99,6 +102,27 @@ Route::middleware(['auth','role:admin'])->group(function () {
 
 Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('contratos', ContratoController::class);
+
+    // ✅ export respetando filtros
+    Route::get('contratos/export/excel', [ContratoController::class, 'exportExcel'])->name('contratos.export.excel');
+    Route::get('contratos/export/pdf',   [ContratoController::class, 'exportPdf'])->name('contratos.export.pdf');
 });
 
-Route::middleware('auth')->get('/api/organizaciones', [OrganizacionController::class, 'index']);
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('organizaciones', OrganizacionController::class)
+        ->parameters(['organizaciones' => 'organizacion']);
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('tipo-productos', TipoProductoController::class)
+        ->only(['index','store','update','destroy']);
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('unidades', UnidadController::class)
+        ->only(['index','store','update','destroy']);
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('productos', ProductoController::class);
+});
