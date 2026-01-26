@@ -42,11 +42,13 @@
     'A_COBRAR'     => 'A cobrar',
     'CON_ANTICIPO' => 'Con anticipo',
     'EN_CANJE'     => 'En canje',
+    'NO_SE_COBRA'  => 'No se cobra',
   ];
 
   $optListaGrano = [
-    'ABIERTA' => 'Abierta',
-    'CERRADA' => 'Cerrada',
+            'ABIERTA' => 'Abierta',
+            'CERRADA' => 'Cerrada',
+            'CAMARA' => 'Camara',
   ];
 
   $optDestino = [
@@ -70,20 +72,19 @@
 =========================== --}}
 <div class="row g-3">
 
-  <div class="col-3 col-md-3">
+  <div class="col-12 col-md-3">
     <label class="form-label">Nro Contrato *</label>
     <input type="number" name="nro_contrato" class="form-control" required min="1"
            value="{{ old('nro_contrato', $c->nro_contrato ?? '') }}">
   </div>
 
-  <div class="col-3 col-md-3">
+  <div class="col-12 col-md-3">
     <label class="form-label">Num Forward</label>
     <input type="number" name="num_forward" class="form-control" min="1"
            value="{{ old('num_forward', $c->num_forward ?? '') }}">
   </div>
 
-
-<div class="col-3 col-md-3">
+  <div class="col-12 col-md-3">
     <label class="form-label">Campaña *</label>
     <select name="campania_id" class="form-select" required>
       <option value="">Seleccionar…</option>
@@ -96,7 +97,7 @@
     </select>
   </div>
 
-  <div class="col-3 col-md-3">
+  <div class="col-12 col-md-3">
     <label class="form-label">Cultivo *</label>
     <select name="cultivo_id" class="form-select" required>
       <option value="">Seleccionar…</option>
@@ -109,73 +110,69 @@
     </select>
   </div>
 
-
-</div>
-
-<div class="row g-3">
-
-  <div class="col-3 col-md-3">
+  <div class="col-12 col-md-3">
     <label class="form-label">Fecha *</label>
     <input type="date" name="fecha" class="form-control" required value="{{ $fechaDefault }}">
   </div>
 
-
- <div class="col-3 col-md-3">
+  <div class="col-12 col-md-3">
     <label class="form-label">Entrega Inicial</label>
     <input type="date" name="entrega_inicial" class="form-control"
            value="{{ old('entrega_inicial', optional($c?->entrega_inicial)->format('Y-m-d') ?? '') }}">
   </div>
 
-  <div class="col-3 col-md-3">
+  <div class="col-12 col-md-3">
     <label class="form-label">Entrega Final</label>
     <input type="date" name="entrega_final" class="form-control"
            value="{{ old('entrega_final', optional($c?->entrega_final)->format('Y-m-d') ?? '') }}">
   </div>
 
-  <div class="col-3 col-md-3">
+  <div class="col-12 col-md-3">
     <label class="form-label">Vendedor</label>
     <input type="text" name="vendedor" class="form-control" maxlength="120"
            value="{{ old('vendedor', $c->vendedor ?? 'Taguay') }}">
   </div>
 
-
 </div>
 
-<div class="row g-3">
+<hr class="my-4">
 
-  {{-- ===========================
-   ORGANIZACIÓN (tabla local + buscador)
+{{-- ===========================
+   ORGANIZACIÓN + MONEDA
 =========================== --}}
 <div class="row g-3">
-  <div class="row g-3">
-  <div class="col-12 col-md-8">
+
+  <div class="col-12 col-lg-8">
     <label class="form-label">Organización <span class="text-danger">*</span></label>
 
-    <div class="input-group">
+    {{-- En móvil: botones abajo / en md+: misma línea --}}
+    <div class="d-flex flex-column flex-md-row gap-2">
       <select id="organizacion_select" name="organizacion_id" class="form-select" required>
         <option value="">— Seleccionar organización —</option>
         @foreach($organizaciones as $o)
           <option value="{{ $o->id }}"
             @selected((string)old('organizacion_id', $c->organizacion_id ?? '') === (string)$o->id)>
-          {{ $o->name }}
+            {{ $o->name }}
           </option>
         @endforeach
       </select>
 
-      <button type="button"
-              class="btn btn-success btn-mat"
-              data-bs-toggle="modal"
-              data-bs-target="#organizacionModal">
-        <i class="bi bi-search"></i>
-        <span class="d-none d-sm-inline">Buscar</span>
-      </button>
+      <div class="d-flex gap-2">
+        <button type="button"
+                class="btn btn-success btn-mat"
+                data-bs-toggle="modal"
+                data-bs-target="#organizacionModal">
+          <i class="bi bi-search"></i>
+          <span class="d-none d-sm-inline">Buscar</span>
+        </button>
 
-      <button type="button"
-              id="clearOrganizacionBtn"
-              class="btn btn-outline-danger btn-mat">
-        <i class="bi bi-x-lg"></i>
-        <span class="d-none d-sm-inline">Quitar</span>
-      </button>
+        <button type="button"
+                id="clearOrganizacionBtn"
+                class="btn btn-outline-danger btn-mat">
+          <i class="bi bi-x-lg"></i>
+          <span class="d-none d-sm-inline">Quitar</span>
+        </button>
+      </div>
     </div>
 
     <div class="form-text text-muted">
@@ -183,7 +180,7 @@
     </div>
   </div>
 
-  <div class="col-12 col-md-4">
+  <div class="col-12 col-lg-4">
     <label class="form-label">Moneda <span class="text-danger">*</span></label>
     <select name="moneda_id" class="form-select" required>
       <option value="">Seleccionar…</option>
@@ -195,9 +192,10 @@
       @endforeach
     </select>
   </div>
+
 </div>
 
-{{-- MODAL BUSCADOR ORGANIZACIONES --}}
+{{-- ✅ Dejá UN SOLO MODAL (el otro lo eliminás) --}}
 <div class="modal fade" id="organizacionModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable modal-lg">
     <div class="modal-content mat-card">
@@ -228,46 +226,13 @@
   </div>
 </div>
 
+<hr class="my-4">
+
 {{-- ===========================
-   MODAL BUSCADOR ORGANIZACIONES
+   SELECTS DE NEGOCIO
 =========================== --}}
-<div class="modal fade" id="organizacionModal" tabindex="-1" aria-labelledby="organizacionModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-lg">
-    <div class="modal-content mat-card">
-      <div class="modal-header mat-header">
-        <h5 class="modal-title mat-title" id="organizacionModalLabel">
-          <i class="bi bi-building"></i> Buscar organización
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-
-      <div class="modal-body">
-        <div class="input-group mb-3">
-          <span class="input-group-text"><i class="bi bi-search"></i></span>
-          <input id="organizacionSearchInput" type="text" class="form-control" placeholder="Código o nombre…">
-        </div>
-
-        <div id="organizacionResults" class="list-group"></div>
-
-        <div id="organizacionEmpty" class="text-center py-4 text-muted">
-          <i class="bi bi-inbox"></i> Escribí para buscar
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 <div class="row g-3">
-
-  {{-- ===========================
-     SELECTS DE NEGOCIO
-  =========================== --}}
-  <div class="col-3">
+  <div class="col-12 col-md-6 col-lg-3">
     <label class="form-label">Característica de Precio *</label>
     <select name="caracteristica_precio" class="form-select" required>
       @foreach($optCaracteristica as $k => $label)
@@ -279,7 +244,7 @@
     </select>
   </div>
 
-  <div class="col-3">
+  <div class="col-12 col-md-6 col-lg-3">
     <label class="form-label">Formación de Precio *</label>
     <select name="formacion_precio" class="form-select" required>
       @foreach($optFormacion as $k => $label)
@@ -291,7 +256,7 @@
     </select>
   </div>
 
-  <div class="col-3">
+  <div class="col-12 col-md-6 col-lg-3">
     <label class="form-label">Condición de Precio *</label>
     <select name="condicion_precio" class="form-select" required>
       @foreach($optCondicionPrecio as $k => $label)
@@ -303,7 +268,7 @@
     </select>
   </div>
 
-    <div class="col-3">
+  <div class="col-12 col-md-6 col-lg-3">
     <label class="form-label">Condición de Pago *</label>
     <select name="condicion_pago" class="form-select" required>
       @foreach($optCondicionPago as $k => $label)
@@ -314,13 +279,10 @@
       @endforeach
     </select>
   </div>
-
-
 </div>
 
-<div class="row g-3">
-
- <div class="col-3">
+<div class="row g-3 mt-0">
+  <div class="col-12 col-md-6 col-lg-3">
     <label class="form-label">Lista de Grano *</label>
     <select name="lista_grano" class="form-select" required>
       @foreach($optListaGrano as $k => $label)
@@ -332,7 +294,7 @@
     </select>
   </div>
 
-  <div class="col-3">
+  <div class="col-12 col-md-6 col-lg-3">
     <label class="form-label">Destino *</label>
     <select name="destino" class="form-select" required>
       @foreach($optDestino as $k => $label)
@@ -344,7 +306,7 @@
     </select>
   </div>
 
-  <div class="col-3">
+  <div class="col-12 col-md-6 col-lg-3">
     <label class="form-label">Formato *</label>
     <select name="formato" class="form-select" required>
       @foreach($optFormato as $k => $label)
@@ -356,7 +318,7 @@
     </select>
   </div>
 
-  <div class="col-3">
+  <div class="col-12 col-md-6 col-lg-3">
     <label class="form-label">Disponible *</label>
     <select name="disponible_tipo" class="form-select" required>
       @foreach($optDisponibleTipo as $k => $label)
@@ -367,59 +329,36 @@
       @endforeach
     </select>
   </div>
-
-
 </div>
 
+<hr class="my-4">
 
-  {{-- ===========================
-     CANTIDAD / PRECIOS
-  =========================== --}}
+{{-- ===========================
+   CANTIDAD / PRECIOS
+=========================== --}}
+<div class="row g-3">
+  <div class="col-12 col-md-4">
+    <label class="form-label">Cantidad / Tn <span class="text-danger">*</span></label>
+    <input type="number" step="0.01" min="0" name="cantidad_tn" id="cantidad_tn"
+           class="form-control" required
+           value="{{ old('cantidad_tn', $c->cantidad_tn ?? 0) }}">
+  </div>
 
+  <div class="col-12 col-md-4">
+    <label class="form-label">Precio <span class="text-danger">*</span></label>
+    <input type="number" step="0.01" min="0" name="precio" id="precio"
+           class="form-control" required
+           value="{{ old('precio', $c->precio ?? 0) }}">
+  </div>
 
-<div class="row">
-
-  <div class="col-4 col-md-4">
-  <label class="form-label">Cantidad / Tn <span class="text-danger">*</span></label>
-  <input
-    type="number"
-    step="0.01"
-    min="0"
-    name="cantidad_tn"
-    id="cantidad_tn"
-    class="form-control"
-    required
-    value="{{ old('cantidad_tn', $c->cantidad_tn ?? 0) }}">
+  <div class="col-12 col-md-4">
+    <label class="form-label">Precio Fijado</label>
+    <input type="number" step="0.01" min="0" name="precio_fijado" id="precio_fijado"
+           class="form-control"
+           value="{{ old('precio_fijado', $c->precio_fijado ?? 0) }}">
+  </div>
 </div>
 
-
-<div class="col-4 col-md-4">
-  <label class="form-label">Precio <span class="text-danger">*</span></label>
-  <input
-    type="number"
-    step="0.01"
-    min="0"
-    name="precio"
-    id="precio"
-    class="form-control"
-    required
-    value="{{ old('precio', $c->precio ?? 0) }}">
-</div>
-
-<div class="col-4 col-md-4">
-  <label class="form-label">Precio Fijado</label>
-  <input
-    type="number"
-    step="0.01"
-    min="0"
-    name="precio_fijado"
-    id="precio_fijado"
-    class="form-control"
-    value="{{ old('precio_fijado', $c->precio_fijado ?? 0) }}">
-</div>
-
-
-</div>
 
 
   {{-- ===========================
@@ -570,7 +509,7 @@
 </div>
 
 <div class="row g-3">
-  <div class="col-12 col-md-4 ms-auto">
+ <div class="col-12 col-md-6 col-lg-4 ms-auto">
     <div class="alert alert-light border d-flex justify-content-between align-items-center mb-0">
       <span><strong>Subtotal</strong> (Precio × Cantidad/Tn)</span>
       <span class="fw-bold" id="subtotal_ui">0.00</span>

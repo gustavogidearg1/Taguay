@@ -3,7 +3,7 @@
 @section('title', 'Editar Contrato')
 
 @section('content')
-<div class="container py-3">
+<div class="container-fluid container-lg py-3">
 
   <div class="card mat-card">
     <div class="card-header mat-header d-flex align-items-center">
@@ -38,7 +38,7 @@
 
         @include('contratos._form', ['contrato' => $contrato])
 
-        <div class="d-flex gap-2 mt-3">
+        <div class="d-flex flex-column flex-sm-row gap-2 mt-3">
           <button class="btn btn-primary btn-mat" type="submit">
             <i class="fa-solid fa-check me-1"></i> Guardar cambios
           </button>
