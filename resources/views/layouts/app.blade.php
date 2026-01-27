@@ -188,8 +188,14 @@
 
                                         <ul class="dropdown-menu">
                                             <li>
-                                                <a class="dropdown-item" href="{{ route('contratos.index') }}">
+                                                <a class="nav-link" href="{{ route('contratos.index') }}">
                                                     <i class="fa-solid fa-file-contract me-2"></i> Contratos
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a class="nav-link" href="{{ route('compras.index') }}">
+                                                    <i class="fa-solid fa-cart-shopping me-2"></i> Compras
                                                 </a>
                                             </li>
 
@@ -252,6 +258,9 @@
                                                 <i class="fa-solid fa-boxes-stacked me-2"></i> Productos
                                             </a>
 
+                                            <a class="nav-link" href="{{ route('condicion-pagos.index') }}">
+                                                <i class="fa-solid fa-file-invoice-dollar me-2"></i> Cond. Pago
+                                            </a>
 
                                         </li>
                                         <li><a class="nav-link" href="{{ route('users.index') }}"><i
