@@ -18,6 +18,8 @@ use App\Http\Controllers\OrganizacionController;
 use App\Http\Controllers\Abm\TipoProductoController;
 use App\Http\Controllers\Abm\UnidadController;
 use App\Http\Controllers\Abm\ProductoController;
+use App\Http\Controllers\Abm\CondicionPagoController;
+use App\Http\Controllers\CompraController;
 
 
 //Referencias
@@ -125,4 +127,13 @@ Route::middleware(['auth','role:admin'])->group(function () {
 
 Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('productos', ProductoController::class);
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('condicion-pagos', CondicionPagoController::class)
+        ->only(['index','store','update','destroy']);
+});
+
+Route::middleware(['auth'])->group(function () {
+  Route::resource('compras', CompraController::class);
 });
