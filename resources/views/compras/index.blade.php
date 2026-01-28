@@ -67,41 +67,45 @@
 
       {{-- Filtros (separados) --}}
       <form method="GET" action="{{ route('compras.index') }}" class="row g-2 align-items-end mb-3">
+<div class="row g-2 align-items-end">
 
-        <div class="col-12 col-md-2">
-  <label class="form-label mb-1">ID</label>
-  <input type="text" name="id" class="form-control" value="{{ $idFilter }}" placeholder="Ej: 123">
+  <div class="col-12 col-sm-6 col-md-2">
+    <label class="form-label mb-1">OC</label>
+    <input type="text" name="id" class="form-control" value="{{ $idFilter }}" placeholder="Ej: 123">
+  </div>
+
+  <div class="col-12 col-sm-6 col-md-3">
+    <label class="form-label mb-1">Organización</label>
+    <input type="text" name="org" class="form-control" value="{{ $orgFilter }}" placeholder="Nombre...">
+  </div>
+
+  <div class="col-12 col-sm-6 col-md-3">
+    <label class="form-label mb-1">Producto</label>
+    <input type="text" name="producto" class="form-control" value="{{ $prodFilter }}" placeholder="Nombre del producto...">
+  </div>
+
+  <div class="col-12 col-sm-6 col-md-2">
+    <label class="form-label mb-1">Campaña</label>
+    <select name="campania_id" class="form-select">
+      <option value="">Todas</option>
+      @foreach(($campanias ?? collect()) as $ca)
+        <option value="{{ $ca->id }}" @selected((string)$campFilter === (string)$ca->id)>{{ $ca->name }}</option>
+      @endforeach
+    </select>
+  </div>
+
+  <div class="col-12 col-sm-6 col-md-2">
+    <label class="form-label mb-1">Por página</label>
+    <select name="per_page" class="form-select">
+      @foreach([10,15,20,50,100] as $n)
+        <option value="{{ $n }}" @selected((int)$perPage === $n)>{{ $n }}</option>
+      @endforeach
+    </select>
+  </div>
+
 </div>
 
-<div class="col-12 col-md-4">
-  <label class="form-label mb-1">Organización</label>
-  <input type="text" name="org" class="form-control" value="{{ $orgFilter }}" placeholder="Nombre...">
-</div>
 
-<div class="col-12 col-md-4">
-  <label class="form-label mb-1">Producto</label>
-  <input type="text" name="producto" class="form-control" value="{{ $prodFilter }}" placeholder="Nombre del producto...">
-</div>
-
-<div class="col-12 col-md-2">
-  <label class="form-label mb-1">Campaña</label>
-  <select name="campania_id" class="form-select">
-    <option value="">Todas</option>
-    @foreach(($campanias ?? collect()) as $ca)
-      <option value="{{ $ca->id }}" @selected((string)$campFilter === (string)$ca->id)>{{ $ca->name }}</option>
-    @endforeach
-  </select>
-</div>
-
-
-        <div class="col-12 col-md-2">
-          <label class="form-label mb-1">Por página</label>
-          <select name="per_page" class="form-select">
-            @foreach([10,15,20,50,100] as $n)
-              <option value="{{ $n }}" @selected((int)$perPage === $n)>{{ $n }}</option>
-            @endforeach
-          </select>
-        </div>
 
         {{-- Mantener sort/dir --}}
         <input type="hidden" name="sort" value="{{ $sortNow }}">
@@ -125,7 +129,7 @@
             <tr>
               <th style="width:90px;">
                 <a href="{{ $sortUrl('id') }}" class="text-decoration-none text-dark">
-                  ID <i class="{{ $sortIcon('id') }} ms-1"></i>
+                  Oc <i class="{{ $sortIcon('id') }} ms-1"></i>
                 </a>
               </th>
 
