@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CompraController extends Controller
 {
@@ -24,32 +25,37 @@ class CompraController extends Controller
     $this->middleware(['auth']);
   }
 
-  public function index(Request $r)
-  {
-$q = trim((string)$r->get('q',''));
+  public function index(Request $request)
+{
+  $perPage = (int) $request->get('per_page', 15);
+  if (!in_array($perPage, [10, 15, 20, 50, 100], true)) $perPage = 15;
 
-$compras = Compra::with(['organizacion','campania','moneda'])
-  ->when($q !== '', function($qq) use ($q) {
+  [$query, $idFilter, $orgFilter, $prodFilter, $campFilter, $sort, $dir] = $this->buildIndexQuery($request);
 
-    // ✅ si es número, buscar por id exacto
-    if (ctype_digit($q)) {
-      $qq->where('id', (int)$q);
-      return;
-    }
+  $compras = $query->paginate($perPage)->appends([
+    'id' => $idFilter,
+    'org' => $orgFilter,
+    'producto' => $prodFilter,
+    'campania_id' => $campFilter,
+    'per_page' => $perPage,
+    'sort' => $sort,
+    'dir' => $dir,
+  ]);
 
-    // ✅ si no, buscar por organización (como ya tenías)
-    $qq->whereHas('organizacion', function($o) use ($q){
-      $o->where('name','like',"%{$q}%")
-        ->orWhere('codigo','like',"%{$q}%");
-    });
+  $campanias = Campania::query()
+    ->where('activo', true)
+    ->orderByDesc('id')
+    ->get(['id','name']);
 
-  })
-  ->orderByDesc('id')
-  ->paginate(15)
-  ->withQueryString();
+  return view('compras.index', compact(
+    'compras','perPage','sort','dir',
+    'idFilter','orgFilter','prodFilter','campFilter',
+    'campanias'
+  ));
+}
 
-    return view('compras.index', compact('compras','q'));
-  }
+
+
 
   public function create()
   {
@@ -281,4 +287,155 @@ if (array_key_exists('codigo', $data)) {
       ]);
     }
   }
+
+  private function buildIndexQuery(Request $request): array
+{
+  $idFilter   = trim((string) $request->get('id', ''));
+  $orgFilter  = trim((string) $request->get('org', ''));
+  $prodFilter = trim((string) $request->get('producto', ''));
+  $campFilter = trim((string) $request->get('campania_id', ''));
+
+  $sort = (string) $request->get('sort', 'id');
+  $dir  = strtolower((string) $request->get('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+  $allowedSort = ['id','fecha','organizacion','campania','moneda','activo'];
+  if (!in_array($sort, $allowedSort, true)) $sort = 'id';
+
+  $query = Compra::query()
+    ->with([
+      'organizacion:id,name',   // ✅ sin codigo
+      'campania:id,name',
+      'moneda:id,name',
+      'subCompras.producto:id,name', // para mostrar productos
+    ]);
+
+  // ID exacto
+  if ($idFilter !== '' && ctype_digit($idFilter)) {
+    $query->where('id', (int)$idFilter);
+  }
+
+  // Organización por nombre
+  if ($orgFilter !== '') {
+    $query->whereHas('organizacion', function($o) use ($orgFilter){
+      $o->where('name','like',"%{$orgFilter}%");
+    });
+  }
+
+  // Producto (por nombre dentro de sub_compras)
+  if ($prodFilter !== '') {
+    $query->whereHas('subCompras.producto', function($p) use ($prodFilter){
+      $p->where('name','like',"%{$prodFilter}%");
+    });
+  }
+
+  // Campaña
+  if ($campFilter !== '' && ctype_digit($campFilter)) {
+    $query->where('campania_id', (int)$campFilter);
+  }
+
+  // Orden
+  switch ($sort) {
+    case 'id':
+    case 'fecha':
+    case 'activo':
+      $query->orderBy($sort, $dir);
+      break;
+
+    case 'organizacion':
+      $query->orderBy(
+        Organizacion::select('name')
+          ->whereColumn('organizaciones.id', 'compras.organizacion_id'),
+        $dir
+      );
+      break;
+
+    case 'campania':
+      $query->orderBy(
+        Campania::select('name')
+          ->whereColumn('campanias.id', 'compras.campania_id'),
+        $dir
+      );
+      break;
+
+    case 'moneda':
+      $query->orderBy(
+        Moneda::select('name')
+          ->whereColumn('monedas.id', 'compras.moneda_id'),
+        $dir
+      );
+      break;
+  }
+
+  // ✅ IMPORTANTE: devolvemos 7 valores
+  return [$query, $idFilter, $orgFilter, $prodFilter, $campFilter, $sort, $dir];
+}
+
+
+public function exportExcel(Request $request): StreamedResponse
+{
+ [$query, $idFilter, $orgFilter, $prodFilter, $campFilter, $sort, $dir] = $this->buildIndexQuery($request);
+
+
+  $rows = $query->get();
+  $filename = 'compras_' . now()->format('Ymd_His') . '.csv';
+
+  return response()->streamDownload(function () use ($rows) {
+    $out = fopen('php://output', 'w');
+
+    fputcsv($out, ['ID', 'Fecha', 'Organizacion', 'Campania', 'Moneda', 'Codigo', 'Activo'], ';');
+
+    foreach ($rows as $c) {
+      fputcsv($out, [
+        $c->id,
+        optional($c->fecha)->format('d/m/Y') ?? '',
+        $c->organizacion->name ?? '',
+        $c->campania->name ?? '',
+        $c->moneda->name ?? '',
+        $c->codigo ?? '',
+        $c->activo ? 'SI' : 'NO',
+      ], ';');
+    }
+
+    fclose($out);
+  }, $filename, [
+    'Content-Type' => 'text/csv; charset=UTF-8',
+  ]);
+}
+
+public function exportPdf(Request $request)
+{
+  // buildIndexQuery devuelve 7 valores
+  [$query, $idFilter, $orgFilter, $prodFilter, $campFilter, $sort, $dir] = $this->buildIndexQuery($request);
+
+  $compras = $query->get();
+
+  // Texto de filtro (para mostrar arriba del PDF si querés)
+  $parts = [];
+  if ($idFilter !== '')   $parts[] = "ID: {$idFilter}";
+  if ($orgFilter !== '')  $parts[] = "Org: {$orgFilter}";
+  if ($prodFilter !== '') $parts[] = "Producto: {$prodFilter}";
+  if ($campFilter !== '') $parts[] = "Campaña: {$campFilter}";
+  $q = implode(' | ', $parts);
+
+  $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('compras.export_pdf', [
+    'compras' => $compras,
+    'q' => $q,          // ahora sí existe
+    'sort' => $sort,
+    'dir' => $dir,
+  ])->setPaper('a4', 'landscape');
+
+  return $pdf->download('compras_' . now()->format('Ymd_His') . '.pdf');
+}
+
+public function exportShowPdf(Compra $compra)
+{
+  $compra->load($this->relations());
+
+  $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('compras.show_pdf', [
+    'compra' => $compra,
+  ])->setPaper('a4', 'portrait'); // o 'landscape' si querés
+
+  return $pdf->download('compra_'.$compra->id.'_'.now()->format('Ymd_His').'.pdf');
+}
+
 }

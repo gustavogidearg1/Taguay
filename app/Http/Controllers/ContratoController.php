@@ -551,4 +551,15 @@ class ContratoController extends Controller
 
         return $pdf->download('contratos_' . now()->format('Ymd_His') . '.pdf');
     }
+
+    public function exportShowPdf(Contrato $contrato)
+{
+    $contrato->load(['campania', 'cultivo', 'moneda', 'organizacion', 'subContratos']);
+
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('contratos.show_pdf', [
+        'contrato' => $contrato,
+    ])->setPaper('a4', 'portrait'); // o 'landscape' si preferís
+
+    return $pdf->download('contrato_'.$contrato->nro_contrato.'_'.now()->format('Ymd_His').'.pdf');
+}
 }

@@ -49,7 +49,7 @@
               <th>Código</th>
               <th>Unidad</th>
               <th>Tipo</th>
-              <th>Flags</th>
+              <th>Opciones</th>
               <th class="text-end" style="width:230px;">Acciones</th>
             </tr>
           </thead>
