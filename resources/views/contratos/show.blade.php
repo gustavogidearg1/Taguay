@@ -13,6 +13,56 @@
     .contrato-title h3 { font-size: 1.05rem; }
     .contrato-title .badge { font-size: .75rem; }
   }
+
+  /* ===================== PRINT ===================== */
+  @media print {
+
+    /* Oculta todo lo marcado como no imprimible */
+    .no-print,
+    .no-print * {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Oculta navbar/sidebar/layout (ajustá selectores si tu layout usa otros) */
+    nav,
+    header,
+    footer,
+    aside,
+    .navbar,
+    .sidebar,
+    .offcanvas,
+    .offcanvas-backdrop,
+    .topbar,
+    .bottom-nav,
+    #sidebar,
+    #rightSidebar,
+    #topbar,
+    #app-sidebar {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    body {
+      padding: 0 !important;
+      margin: 0 !important;
+      background: #fff !important;
+    }
+
+    .container,
+    .container-fluid,
+    .container-lg {
+      max-width: 100% !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .card { border: none !important; box-shadow: none !important; }
+
+    /* Evita cortes raros en tablas */
+    table, tr, td, th { page-break-inside: avoid; }
+  }
 </style>
 @endpush
 
@@ -384,6 +434,11 @@
   {{-- Acciones (al final) --}}
 <div class="no-print mt-4 pt-3 border-top">
   <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+
+    <a href="{{ route('contratos.show_pdf', $contrato) }}" class="btn btn-outline-danger btn-mat">
+  <i class="fa-solid fa-file-pdf me-1"></i> PDF
+</a>
+
     <button class="btn btn-outline-secondary btn-mat" onclick="window.print()">
       <i class="fa-solid fa-print me-1"></i> Imprimir
     </button>

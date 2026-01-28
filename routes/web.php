@@ -108,6 +108,9 @@ Route::middleware(['auth','role:admin'])->group(function () {
     // ✅ export respetando filtros
     Route::get('contratos/export/excel', [ContratoController::class, 'exportExcel'])->name('contratos.export.excel');
     Route::get('contratos/export/pdf',   [ContratoController::class, 'exportPdf'])->name('contratos.export.pdf');
+
+    Route::get('/contratos/{contrato}/pdf', [ContratoController::class, 'exportShowPdf'])
+  ->name('contratos.show_pdf');
 });
 
 Route::middleware(['auth','role:admin'])->group(function () {
@@ -137,3 +140,9 @@ Route::middleware(['auth','role:admin'])->group(function () {
 Route::middleware(['auth'])->group(function () {
   Route::resource('compras', CompraController::class);
 });
+
+Route::get('/compras/export/excel', [CompraController::class, 'exportExcel'])->name('compras.export.excel');
+Route::get('/compras/export/pdf',   [CompraController::class, 'exportPdf'])->name('compras.export.pdf');
+Route::get('/compras/{compra}/pdf', [CompraController::class, 'exportShowPdf'])
+  ->name('compras.show_pdf');
+
