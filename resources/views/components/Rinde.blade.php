@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Cosecha' )
+@section('title','Rinde' )
 
   {{-- Favicon --}}
   <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
