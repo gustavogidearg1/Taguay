@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Estados' )
+@section('title','Estados de campos' )
 
   {{-- Favicon --}}
   <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
@@ -58,7 +58,7 @@
 <div class="iframe-container">
     <iframe
         title="Cosecha"
-        src="https://app.powerbi.com/view?r=eyJrIjoiMjhkMzhmMTAtNzM0NS00YjJlLTkzZjEtM2ZkYmY5YjA5NDA2IiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
+        src="https://app.powerbi.com/view?r=eyJrIjoiMTM5NDI1ZjktY2E2OC00MTVmLTkzNjYtYjg0ZmY5ZTNjZWQ0IiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
         allowFullScreen="true">
     </iframe>
 </div>
