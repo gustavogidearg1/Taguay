@@ -11,6 +11,8 @@ use App\Http\Controllers\EstablecimientoController;
 
 use App\Http\Controllers\MargenBrutoController;
 use App\Http\Controllers\CosechaController;
+use App\Http\Controllers\RindeController;
+Use App\Http\Controllers\EstadosController;
 use App\Http\Controllers\FlujoFondoController;
 use App\Http\Controllers\TaguayController;
 use App\Http\Controllers\ContratoController;
@@ -20,6 +22,7 @@ use App\Http\Controllers\Abm\UnidadController;
 use App\Http\Controllers\Abm\ProductoController;
 use App\Http\Controllers\Abm\CondicionPagoController;
 use App\Http\Controllers\CompraController;
+
 
 
 //Referencias
@@ -46,7 +49,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/margen-bruto', [MargenBrutoController::class, 'index'])->name('margen-bruto');
     Route::get('/cosecha', [CosechaController::class, 'index'])->name('cosecha');
     Route::get('/flujo-fondo', [FlujoFondoController::class, 'index'])->name('flujo-fondo');
-
+    Route::get('/rinde', [RindeController::class, 'index'])->name('rinde');
+    Route::get('/estados', [EstadosController::class, 'index'])->name('estados');
 
     // ABM Usuarios (solo admin)
     Route::resource('users', UserController::class)->middleware('role:admin');

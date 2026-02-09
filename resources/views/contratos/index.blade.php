@@ -1,4 +1,3 @@
-{{-- resources/views/contratos/index.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Contratos')
@@ -7,27 +6,31 @@
 <div class="container-fluid px-2 px-md-3 py-3">
 
   @php
-    $q = $q ?? request('q','');
-    $perPage = $perPage ?? (int)request('per_page', 15);
-    $sortNow = $sort ?? request('sort','id');
-    $dirNow  = $dir  ?? request('dir','desc');
+  $qMain     = $qMain     ?? request('q_main','');
+  $qCampania = $qCampania ?? request('q_campania','');
+  $qCultivo  = $qCultivo  ?? request('q_cultivo','');
+  $qOrg      = $qOrg      ?? request('q_org','');
 
-    $sortUrl = function(string $col) {
-      $sortNow = request('sort','id');
-      $dirNow  = request('dir','desc');
-      $nextDir = ($sortNow === $col && $dirNow === 'asc') ? 'desc' : 'asc';
-      return request()->fullUrlWithQuery(['sort' => $col, 'dir' => $nextDir]);
-    };
+  $perPage = $perPage ?? (int)request('per_page', 15);
+  $sortNow = $sort ?? request('sort','id');
+  $dirNow  = $dir  ?? request('dir','desc');
 
-    $sortIcon = function(string $col) {
-      $sortNow = request('sort','id');
-      $dirNow  = request('dir','desc');
-      if ($sortNow !== $col) return 'fa-solid fa-sort';
-      return $dirNow === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
-    };
+  $sortUrl = function(string $col) {
+    $sortNow = request('sort','id');
+    $dirNow  = request('dir','desc');
+    $nextDir = ($sortNow === $col && $dirNow === 'asc') ? 'desc' : 'asc';
+    return request()->fullUrlWithQuery(['sort' => $col, 'dir' => $nextDir]);
+  };
 
-    $fmtNum = fn($n) => is_numeric($n) ? number_format((float)$n, 2, ',', '.') : '—';
-  @endphp
+  $sortIcon = function(string $col) {
+    $sortNow = request('sort','id');
+    $dirNow  = request('dir','desc');
+    if ($sortNow !== $col) return 'fa-solid fa-sort';
+    return $dirNow === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+  };
+
+  $fmtNum = fn($n) => is_numeric($n) ? number_format((float)$n, 2, ',', '.') : '—';
+@endphp
 
   <div class="card mat-card">
     <div class="card-header mat-header d-flex align-items-center">
@@ -59,38 +62,67 @@
 
       {{-- Buscador --}}
       <form method="GET" action="{{ route('contratos.index') }}" class="row g-2 align-items-end mb-3">
-        <div class="col-12 col-md-6">
-          <label class="form-label mb-1">Buscar</label>
-          <input type="text"
-                 name="q"
-                 class="form-control"
-                 placeholder="Nro contrato, forward, cliente, vendedor..."
-                 value="{{ $q }}">
-        </div>
 
-        <div class="col-12 col-md-2">
-          <label class="form-label mb-1">Por página</label>
-          <select name="per_page" class="form-select">
-            @foreach([10,15,20,50,100] as $n)
-              <option value="{{ $n }}" @selected((int)$perPage === $n)>{{ $n }}</option>
-            @endforeach
-          </select>
-        </div>
+  <div class="col-12 col-md-4">
+    <label class="form-label mb-1">Contrato / Obs</label>
+    <input type="text"
+           name="q_main"
+           class="form-control"
+           placeholder="Nro contrato, forward u observación..."
+           value="{{ $qMain }}">
+  </div>
 
-        {{-- Mantener sort/dir al filtrar --}}
-        <input type="hidden" name="sort" value="{{ $sortNow }}">
-        <input type="hidden" name="dir" value="{{ $dirNow }}">
+  <div class="col-12 col-md-2">
+    <label class="form-label mb-1">Campaña</label>
+    <input type="text"
+           name="q_campania"
+           class="form-control"
+           placeholder="Ej: 24/25"
+           value="{{ $qCampania }}">
+  </div>
 
-        <div class="col-12 col-md-4 d-grid d-md-flex gap-2">
-          <button class="btn btn-dark">
-            <i class="fa-solid fa-magnifying-glass me-1"></i> Filtrar
-          </button>
+  <div class="col-12 col-md-2">
+    <label class="form-label mb-1">Cultivo</label>
+    <input type="text"
+           name="q_cultivo"
+           class="form-control"
+           placeholder="Ej: Soja"
+           value="{{ $qCultivo }}">
+  </div>
 
-          <a href="{{ route('contratos.index') }}" class="btn btn-outline-secondary">
-            <i class="fa-solid fa-rotate-left me-1"></i> Limpiar
-          </a>
-        </div>
-      </form>
+  <div class="col-12 col-md-2">
+    <label class="form-label mb-1">Cliente / Organización</label>
+    <input type="text"
+           name="q_org"
+           class="form-control"
+           placeholder="Nombre o código..."
+           value="{{ $qOrg }}">
+  </div>
+
+  <div class="col-12 col-md-2">
+    <label class="form-label mb-1">Por página</label>
+    <select name="per_page" class="form-select">
+      @foreach([10,15,20,50,100] as $n)
+        <option value="{{ $n }}" @selected((int)$perPage === $n)>{{ $n }}</option>
+      @endforeach
+    </select>
+  </div>
+
+  {{-- Mantener sort/dir al filtrar --}}
+  <input type="hidden" name="sort" value="{{ $sortNow }}">
+  <input type="hidden" name="dir" value="{{ $dirNow }}">
+
+  <div class="col-12 d-grid d-md-flex gap-2 mt-1">
+    <button class="btn btn-dark">
+      <i class="fa-solid fa-magnifying-glass me-1"></i> Filtrar
+    </button>
+
+    <a href="{{ route('contratos.index') }}" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-rotate-left me-1"></i> Limpiar
+    </a>
+  </div>
+
+</form>
 
       {{-- Tabla --}}
       <div class="table-responsive">
@@ -103,11 +135,7 @@
                 </a>
               </th>
 
-              <th style="width:110px;">
-                <a href="{{ $sortUrl('num_forward') }}" class="text-decoration-none text-dark">
-                  Forward <i class="{{ $sortIcon('num_forward') }} ms-1"></i>
-                </a>
-              </th>
+
 
               <th style="width:110px;">
                 <a href="{{ $sortUrl('fecha') }}" class="text-decoration-none text-dark">
@@ -156,7 +184,7 @@
             @forelse($contratos as $c)
               <tr>
                 <td class="fw-semibold">{{ $c->nro_contrato }}</td>
-                <td>{{ $c->num_forward ?? '—' }}</td>
+
                 <td>{{ optional($c->fecha)->format('d/m/Y') ?? '—' }}</td>
 
                 <td>
@@ -181,12 +209,12 @@
   <div class="d-grid d-sm-flex justify-content-end gap-1 flex-wrap flex-sm-nowrap">
     <a href="{{ route('contratos.show', $c) }}"
        class="btn btn-sm btn-outline-secondary w-100 w-sm-auto">
-      <i class="fa-solid fa-eye me-1"></i> Ver
+      <i class="fa-solid fa-eye me-1"></i>
     </a>
 
     <a href="{{ route('contratos.edit', $c) }}"
        class="btn btn-sm btn-outline-primary w-100 w-sm-auto">
-      <i class="fa-solid fa-pen me-1"></i> Editar
+      <i class="fa-solid fa-pen me-1"></i>
     </a>
 
     <form action="{{ route('contratos.destroy', $c) }}"
@@ -196,7 +224,7 @@
       @csrf
       @method('DELETE')
       <button type="submit" class="btn btn-sm btn-outline-danger w-100 w-sm-auto">
-        <i class="fa-solid fa-trash me-1"></i> Eliminar
+        <i class="fa-solid fa-trash me-1"></i>
       </button>
     </form>
   </div>

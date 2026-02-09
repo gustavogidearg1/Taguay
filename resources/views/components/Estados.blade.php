@@ -1,5 +1,9 @@
 @extends('layouts.app')
-@section('title', 'Prueba')
+
+@section('title','Estados' )
+
+  {{-- Favicon --}}
+  <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
 <style>
     /* Asegúrate de que el body y html ocupen el 100% del alto */
@@ -25,7 +29,7 @@
         height: 100%;
         border: none; /* Elimina el borde predeterminado del iframe */
     }
-    
+
     /* Estilo del botón flotante */
     .back-button {
         position: fixed; /* Cambia a posición fija */
@@ -50,10 +54,11 @@
     <img src="{{ asset('storage/images/Hacia_atras.png') }}" alt="Volver atrás">
 </a>
 
-    <!-- Contenedor para el iframe -->
-    <div class="iframe-container">
-  <!-- Boton de retroceso -->
-<H1>prueba</H1>
-    </div>
-
-
+<!-- Contenedor para el iframe -->
+<div class="iframe-container">
+    <iframe
+        title="Cosecha"
+        src="https://app.powerbi.com/view?r=eyJrIjoiMjhkMzhmMTAtNzM0NS00YjJlLTkzZjEtM2ZkYmY5YjA5NDA2IiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
+        allowFullScreen="true">
+    </iframe>
+</div>

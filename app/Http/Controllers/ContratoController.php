@@ -25,21 +25,27 @@ class ContratoController extends Controller
        INDEX (filtro + paginación)
     ========================== */
     public function index(Request $request)
-    {
-        $perPage = (int) $request->get('per_page', 15);
-        if (!in_array($perPage, [10, 15, 20, 50, 100], true)) $perPage = 15;
+{
+    $perPage = (int) $request->get('per_page', 15);
+    if (!in_array($perPage, [10, 15, 20, 50, 100], true)) $perPage = 15;
 
-        [$query, $q, $sort, $dir] = $this->buildIndexQuery($request);
+    [$query, $filters, $sort, $dir] = $this->buildIndexQuery($request);
 
-        $contratos = $query->paginate($perPage)->appends([
-            'q' => $q,
-            'per_page' => $perPage,
-            'sort' => $sort,
-            'dir' => $dir,
-        ]);
+    $contratos = $query->paginate($perPage)->appends($request->query());
 
-        return view('contratos.index', compact('contratos', 'q', 'perPage', 'sort', 'dir'));
-    }
+    return view('contratos.index', [
+        'contratos'  => $contratos,
+        'perPage'    => $perPage,
+        'sort'       => $sort,
+        'dir'        => $dir,
+
+        // ✅ para que la vista muestre los valores en los inputs
+        'qMain'      => $filters['q_main'],
+        'qCampania'  => $filters['q_campania'],
+        'qCultivo'   => $filters['q_cultivo'],
+        'qOrg'       => $filters['q_org'],
+    ]);
+}
 
     /* =========================
        CREATE
@@ -434,123 +440,151 @@ class ContratoController extends Controller
 }
 
     private function buildIndexQuery(Request $request)
-    {
-        $q = trim((string) $request->get('q', ''));
+{
+    $qMain     = trim((string) $request->get('q_main', ''));
+    $qCampania = trim((string) $request->get('q_campania', ''));
+    $qCultivo  = trim((string) $request->get('q_cultivo', ''));
+    $qOrg      = trim((string) $request->get('q_org', ''));
 
-        $sort = (string) $request->get('sort', 'id');
-        $dir  = strtolower((string) $request->get('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+    $sort = (string) $request->get('sort', 'id');
+    $dir  = strtolower((string) $request->get('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        // columnas permitidas para ordenar (evita inyección)
-        $allowedSort = ['id', 'nro_contrato', 'num_forward', 'fecha', 'organizacion', 'campania', 'cultivo', 'cantidad_tn', 'precio'];
+    $allowedSort = ['id','nro_contrato','num_forward','fecha','organizacion','campania','cultivo','cantidad_tn','precio'];
+    if (!in_array($sort, $allowedSort, true)) $sort = 'id';
 
+    $query = Contrato::query()
+        ->with(['campania', 'cultivo', 'moneda', 'organizacion']);
 
-        if (!in_array($sort, $allowedSort, true)) $sort = 'id';
-
-        $query = Contrato::query()
-            ->with(['campania', 'cultivo', 'moneda', 'organizacion']);
-
-        if ($q !== '') {
-            $query->where(function ($w) use ($q) {
-                $w->where('nro_contrato', 'like', "%{$q}%")
-                    ->orWhere('num_forward', 'like', "%{$q}%")
-                    ->orWhere('vendedor', 'like', "%{$q}%")
-                    ->orWhereHas('organizacion', function ($o) use ($q) {
-                        $o->where('name', 'like', "%{$q}%")
-                            ->orWhere('codigo', 'like', "%{$q}%");
-                    });
-            });
-        }
-
-        // ✅ orden
-        switch ($sort) {
-            case 'nro_contrato':
-            case 'num_forward':
-            case 'fecha':
-            case 'id':
-            case 'cantidad_tn':
-            case 'precio':
-                $query->orderBy($sort, $dir);
-                break;
-
-            case 'organizacion':
-                $query->orderBy(
-                    Organizacion::select('name')
-                        ->whereColumn('organizaciones.id', 'contratos.organizacion_id'),
-                    $dir
-                );
-                break;
-
-            case 'campania':
-                $query->orderBy(
-                    Campania::select('name')
-                        ->whereColumn('campanias.id', 'contratos.campania_id'),
-                    $dir
-                );
-                break;
-
-            case 'cultivo':
-                $query->orderBy(
-                    Cultivo::select('name')
-                        ->whereColumn('cultivos.id', 'contratos.cultivo_id'),
-                    $dir
-                );
-                break;
-        }
-
-        return [$query, $q, $sort, $dir];
+    // ✅ Filtro principal: nro / forward / obs / vendedor / organizacion
+    if ($qMain !== '') {
+        $query->where(function ($w) use ($qMain) {
+            $w->where('nro_contrato', 'like', "%{$qMain}%")
+              ->orWhere('num_forward', 'like', "%{$qMain}%")
+              ->orWhere('vendedor', 'like', "%{$qMain}%")
+              ->orWhere('obs', 'like', "%{$qMain}%")
+              ->orWhereHas('organizacion', function ($o) use ($qMain) {
+                  $o->where('name', 'like', "%{$qMain}%")
+                    ->orWhere('codigo', 'like', "%{$qMain}%");
+              });
+        });
     }
+
+    // ✅ Campaña por name (ej layering "24/25")
+    if ($qCampania !== '') {
+        $query->whereHas('campania', function ($c) use ($qCampania) {
+            $c->where('name', 'like', "%{$qCampania}%");
+        });
+    }
+
+    // ✅ Cultivo por name
+    if ($qCultivo !== '') {
+        $query->whereHas('cultivo', function ($c) use ($qCultivo) {
+            $c->where('name', 'like', "%{$qCultivo}%");
+        });
+    }
+
+    // ✅ Cliente/Organización por name o codigo
+    if ($qOrg !== '') {
+        $query->whereHas('organizacion', function ($o) use ($qOrg) {
+            $o->where('name', 'like', "%{$qOrg}%")
+              ->orWhere('codigo', 'like', "%{$qOrg}%");
+        });
+    }
+
+    // ✅ Orden
+    switch ($sort) {
+        case 'nro_contrato':
+        case 'num_forward':
+        case 'fecha':
+        case 'id':
+        case 'cantidad_tn':
+        case 'precio':
+            $query->orderBy($sort, $dir);
+            break;
+
+        case 'organizacion':
+            $query->orderBy(
+                Organizacion::select('name')
+                    ->whereColumn('organizaciones.id', 'contratos.organizacion_id'),
+                $dir
+            );
+            break;
+
+        case 'campania':
+            $query->orderBy(
+                Campania::select('name')
+                    ->whereColumn('campanias.id', 'contratos.campania_id'),
+                $dir
+            );
+            break;
+
+        case 'cultivo':
+            $query->orderBy(
+                Cultivo::select('name')
+                    ->whereColumn('cultivos.id', 'contratos.cultivo_id'),
+                $dir
+            );
+            break;
+    }
+
+    $filters = [
+        'q_main'     => $qMain,
+        'q_campania' => $qCampania,
+        'q_cultivo'  => $qCultivo,
+        'q_org'      => $qOrg,
+    ];
+
+    return [$query, $filters, $sort, $dir];
+}
+
 
     public function exportExcel(Request $request): StreamedResponse
-    {
-        [$query, $q, $sort, $dir] = $this->buildIndexQuery($request);
+{
+    [$query, $filters, $sort, $dir] = $this->buildIndexQuery($request);
 
-        // exportamos todo (sin paginar)
-        $rows = $query->get();
+    $rows = $query->get();
 
-        $filename = 'contratos_' . now()->format('Ymd_His') . '.csv';
+    $filename = 'contratos_' . now()->format('Ymd_His') . '.csv';
 
-        return response()->streamDownload(function () use ($rows) {
-            $out = fopen('php://output', 'w');
+    return response()->streamDownload(function () use ($rows) {
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Nro', 'Forward', 'Fecha', 'Cliente', 'Campaña', 'Cultivo', 'Cantidad_tn', 'Precio', 'Obs'], ';');
 
-            // encabezados
-            fputcsv($out, ['Nro', 'Forward', 'Fecha', 'Cliente', 'Campaña', 'Cultivo', 'Cantidad_tn', 'Precio', 'Obs'], ';');
+        foreach ($rows as $c) {
+            fputcsv($out, [
+                $c->nro_contrato,
+                $c->num_forward ?? '',
+                optional($c->fecha)->format('d/m/Y') ?? '',
+                $c->organizacion->name ?? '',
+                $c->campania->name ?? '',
+                $c->cultivo->name ?? '',
+                $c->cantidad_tn ?? '',
+                $c->precio ?? '',
+                $c->obs ?? '',
+            ], ';');
+        }
 
+        fclose($out);
+    }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+}
 
-            foreach ($rows as $c) {
-                fputcsv($out, [
-                    $c->nro_contrato,
-                    $c->num_forward ?? '',
-                    optional($c->fecha)->format('d/m/Y') ?? '',
-                    $c->organizacion->name ?? '',
-                    $c->campania->name ?? '',
-                    $c->cultivo->name ?? '',
-                    $c->cantidad_tn ?? '',
-                    $c->precio ?? '',
-                    $c->obs ?? '',
-                ], ';');
-            }
-
-            fclose($out);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
-    }
 
     public function exportPdf(Request $request)
-    {
-        [$query, $q, $sort, $dir] = $this->buildIndexQuery($request);
+{
+    [$query, $filters, $sort, $dir] = $this->buildIndexQuery($request);
 
-        $contratos = $query->get();
+    $contratos = $query->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('contratos.export_pdf', [
-            'contratos' => $contratos,
-            'q' => $q,
-            'sort' => $sort,
-            'dir' => $dir,
-        ])->setPaper('a4', 'landscape');
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('contratos.export_pdf', [
+        'contratos' => $contratos,
+        'filters'   => $filters,
+        'sort'      => $sort,
+        'dir'       => $dir,
+    ])->setPaper('a4', 'landscape');
 
-        return $pdf->download('contratos_' . now()->format('Ymd_His') . '.pdf');
-    }
+    return $pdf->download('contratos_' . now()->format('Ymd_His') . '.pdf');
+}
+
 
     public function exportShowPdf(Contrato $contrato)
 {
