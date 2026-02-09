@@ -57,8 +57,8 @@
 <!-- Contenedor para el iframe -->
 <div class="iframe-container">
     <iframe
-        title="Cosecha"
-        src="https://app.powerbi.com/view?r=eyJrIjoiMjhkMzhmMTAtNzM0NS00YjJlLTkzZjEtM2ZkYmY5YjA5NDA2IiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
+        title="Rinde"
+        src="https://app.powerbi.com/view?r=eyJrIjoiNGRjNzhjYTUtN2Q3ZC00MDljLWE5Y2ItZWRiODFhNmI4MmRkIiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
         allowFullScreen="true">
     </iframe>
 </div>
