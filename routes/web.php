@@ -29,6 +29,7 @@ use App\Http\Controllers\CompraController;
 use App\Http\Controllers\MonedaController;
 use App\Http\Controllers\CultivoController;
 use App\Http\Controllers\CampaniaController;
+use App\Http\Controllers\Abm\FinancieraController;
 
 Route::get('/', function () {
     return Auth::check()
@@ -134,6 +135,7 @@ Route::middleware(['auth','role:admin'])->group(function () {
 
 Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('productos', ProductoController::class);
+    Route::resource('financieras', FinancieraController::class)->except(['create','edit','show']);
 });
 
 Route::middleware(['auth','role:admin'])->group(function () {
