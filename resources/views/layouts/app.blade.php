@@ -214,6 +214,11 @@
                                                 <i class="fa-solid fa-cart-shopping me-2"></i> Compras
                                             </a>
                                         </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('creditos-calificaciones.index') }}">
+                                                <i class="fa-solid fa-chart-line me-2"></i> Calificación Créditos
+                                            </a>
+                                        </li>
                                     </ul>
                                 </li>
                             @endif
@@ -240,7 +245,8 @@
                                                 <div id="abmAgricola" class="accordion-collapse collapse"
                                                     aria-labelledby="abmAgricolaHead" data-bs-parent="#abmAccordion">
                                                     <div class="accordion-body py-2 px-0">
-                                                        <a class="dropdown-item" href="{{ route('establecimientos.index') }}">
+                                                        <a class="dropdown-item"
+                                                            href="{{ route('establecimientos.index') }}">
                                                             <i class="fa-solid fa-building me-2"></i> Establecimiento
                                                         </a>
                                                         <a class="dropdown-item" href="{{ route('cultivos.index') }}">

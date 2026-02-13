@@ -22,6 +22,7 @@ use App\Http\Controllers\Abm\UnidadController;
 use App\Http\Controllers\Abm\ProductoController;
 use App\Http\Controllers\Abm\CondicionPagoController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\Abm\CreditoCalificacionController;
 
 
 
@@ -152,3 +153,7 @@ Route::get('/compras/export/pdf',   [CompraController::class, 'exportPdf'])->nam
 Route::get('/compras/{compra}/pdf', [CompraController::class, 'exportShowPdf'])
   ->name('compras.show_pdf');
 
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('creditos-calificaciones', CreditoCalificacionController::class);
+});
