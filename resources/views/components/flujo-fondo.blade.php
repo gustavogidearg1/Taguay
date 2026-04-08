@@ -1,6 +1,9 @@
 @extends('layouts.app')
 @section('title', 'Flujo de fondo')
 
+  {{-- Favicon --}}
+  <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+
 <style>
     /* Asegúrate de que el body y html ocupen el 100% del alto */
     html, body {
@@ -25,7 +28,7 @@
         height: 100%;
         border: none; /* Elimina el borde predeterminado del iframe */
     }
-    
+
     /* Estilo del botón flotante */
     .back-button {
         position: fixed; /* Cambia a posición fija */

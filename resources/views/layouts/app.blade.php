@@ -31,7 +31,7 @@
         }
 
         body {
-            background-color: #f3f4f6;
+            background-color: #f4f6f3;
         }
 
         :root {

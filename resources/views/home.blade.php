@@ -89,15 +89,16 @@
     </div>
 </div>
 
- <div class="container">
-  <div class="row g-3">  <!-- g-3 = separación prolija entre columnas -->
+ <!--Inicio Contenedor Dashboard power bi-->
+<div class="container">
+  <div class="row g-3">
 
-    <!-- TILE 1 -->
+    <!-- TILE 0 (queda igual) -->
     <div class="col-12 col-md-6">
       <div class="pbi-only-desktop">
         <div class="pbi-frame pbi-frame--desktop">
           <iframe title="Estado_Campo_Rinde" class="pbi-iframe"
-            src="https://app.powerbi.com/view?r=eyJrIjoiNWJkM2IyNTQtMjIyNS00M2IyLWFhNmQtNThmZDUyZDAzMGM4IiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
+            src="https://app.powerbi.com/view?r=eyJrIjoiYzQ1YzRjYjMtMzE1ZC00ODUxLTkyYzQtYTIyZTE3NzZjNDYyIiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
             loading="lazy" allowfullscreen></iframe>
         </div>
       </div>
@@ -105,33 +106,85 @@
       <div class="pbi-only-phone">
         <div class="pbi-frame pbi-frame--phone">
           <iframe title="Estado_Campo_Rinde_Telefono" class="pbi-iframe"
-            src="https://app.powerbi.com/view?r=eyJrIjoiZjJjMWVmMjMtYWVlNS00ZDYxLTgwNjUtMzMwMGVkZGE4ZTkwIiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
+            src="https://app.powerbi.com/view?r=eyJrIjoiZjJhZTEzYTYtYzk1Zi00YTA4LThhN2QtMzJlMGU0ZGMxZTI1IiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
             loading="lazy" allowfullscreen></iframe>
         </div>
       </div>
     </div>
 
-    <!-- TILE 2 -->
+    <!-- CONTENEDOR CARRUSEL (TILE 1 + TILE 2) -->
     <div class="col-12 col-md-6">
-      <div class="pbi-only-desktop">
-        <div class="pbi-frame pbi-frame--desktop">
-          <iframe title="Estado_Campo_Superficie" class="pbi-iframe"
-            src="https://app.powerbi.com/view?r=eyJrIjoiYWUwNTNjYmYtMjBiZC00ZTlmLThhMmEtYzc2NmM2NjExOTQyIiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
-            loading="lazy" allowfullscreen></iframe>
-        </div>
-      </div>
+      <div id="pbiTilesCarousel"
+           class="carousel slide"
+           data-bs-ride="carousel"
+           data-bs-interval="6000"
+           data-bs-touch="true">
 
-      <div class="pbi-only-phone">
-        <div class="pbi-frame pbi-frame--phone">
-          <iframe title="Estado_Campo_Superficie_Telefono" class="pbi-iframe"
-            src="https://app.powerbi.com/view?r=eyJrIjoiMDY1N2IyNGItMDE0YS00MzU4LTliNDQtYzEzNTMwZmE0YTEyIiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
-            loading="lazy" allowfullscreen></iframe>
+        <!-- (Opcional) indicadores -->
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#pbiTilesCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Tile 1"></button>
+          <button type="button" data-bs-target="#pbiTilesCarousel" data-bs-slide-to="1" aria-label="Tile 2"></button>
         </div>
+
+        <div class="carousel-inner">
+
+          <!-- TILE 1 -->
+          <div class="carousel-item active">
+            <div class="pbi-only-desktop">
+              <div class="pbi-frame pbi-frame--desktop">
+                <iframe title="Tile_1" class="pbi-iframe"
+                  src="https://app.powerbi.com/view?r=eyJrIjoiNWJkM2IyNTQtMjIyNS00M2IyLWFhNmQtNThmZDUyZDAzMGM4IiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
+                  loading="lazy" allowfullscreen></iframe>
+              </div>
+            </div>
+
+            <div class="pbi-only-phone">
+              <div class="pbi-frame pbi-frame--phone">
+                <iframe title="Tile_1_Telefono" class="pbi-iframe"
+                  src="https://app.powerbi.com/view?r=eyJrIjoiZjJjMWVmMjMtYWVlNS00ZDYxLTgwNjUtMzMwMGVkZGE4ZTkwIiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
+                  loading="lazy" allowfullscreen></iframe>
+              </div>
+            </div>
+          </div>
+
+          <!-- TILE 2 -->
+          <div class="carousel-item">
+            <div class="pbi-only-desktop">
+              <div class="pbi-frame pbi-frame--desktop">
+                <iframe title="Tile_2" class="pbi-iframe"
+                  src="https://app.powerbi.com/view?r=eyJrIjoiYWUwNTNjYmYtMjBiZC00ZTlmLThhMmEtYzc2NmM2NjExOTQyIiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
+                  loading="lazy" allowfullscreen></iframe>
+              </div>
+            </div>
+
+            <div class="pbi-only-phone">
+              <div class="pbi-frame pbi-frame--phone">
+                <iframe title="Tile_2_Telefono" class="pbi-iframe"
+                  src="https://app.powerbi.com/view?r=eyJrIjoiMDY1N2IyNGItMDE0YS00MzU4LTliNDQtYzEzNTMwZmE0YTEyIiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
+                  loading="lazy" allowfullscreen></iframe>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Flechas -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#pbiTilesCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+
+        <button class="carousel-control-next" type="button" data-bs-target="#pbiTilesCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+        </button>
+
       </div>
     </div>
 
   </div>
 </div>
+<!--Fin Contenedor Dashboard power bi-->
 
 
 @endsection
