@@ -313,8 +313,28 @@
                                                         <a class="dropdown-item" href="{{ route('users.index') }}">
                                                             <i class="fa-solid fa-users me-2"></i> Usuarios
                                                         </a>
+
+
+                                                        <a class="dropdown-item" href="{{ route('lotes.index') }}">
+                                                            <i class="fa-solid fa-draw-polygon me-2"></i> Lotes
+                                                        </a>
+
+                                                        <a class="dropdown-item" href="{{ route('estados-cultivo.index') }}">
+                                                            <i class="fa-solid fa-seedling me-2"></i> Estados de Cultivo
+                                                        </a>
+
+                                                        <a class="dropdown-item" href="{{ route('lote-estados.index') }}">
+                                                            <i class="fa-solid fa-list-check me-2"></i> Estados por Lote
+                                                        </a>
+
+
                                                     </div>
                                                 </div>
+
+
+
+
+
                                             </div>
 
                                         </div>
