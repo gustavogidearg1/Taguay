@@ -20,9 +20,12 @@ class DatabaseSeeder extends Seeder
                 Role::factory()->create(['name' => 'editor']);
                 Role::factory()->create(['name' => 'user']);
 
+
         User::factory()->create([
             'name' => 'LuciaC',
             'email' => 'lcingolani@taguay.com.ar',
         ]);
+
+        $this->call(EstadoCultivoSeeder::class);
     }
 }

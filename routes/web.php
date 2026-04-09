@@ -24,7 +24,9 @@ use App\Http\Controllers\Abm\CondicionPagoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\Abm\CreditoCalificacionController;
 
-
+use App\Http\Controllers\LoteController;
+use App\Http\Controllers\EstadoCultivoController;
+use App\Http\Controllers\LoteEstadoController;
 
 //Referencias
 use App\Http\Controllers\MonedaController;
@@ -156,4 +158,15 @@ Route::get('/compras/{compra}/pdf', [CompraController::class, 'exportShowPdf'])
 
 Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('creditos-calificaciones', CreditoCalificacionController::class);
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('lotes', LoteController::class);
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('estados-cultivo', EstadoCultivoController::class)
+        ->only(['index', 'store', 'update', 'destroy']);
+
+    Route::resource('lote-estados', LoteEstadoController::class);
 });
