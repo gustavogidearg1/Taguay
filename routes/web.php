@@ -23,10 +23,10 @@ use App\Http\Controllers\Abm\ProductoController;
 use App\Http\Controllers\Abm\CondicionPagoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\Abm\CreditoCalificacionController;
-
 use App\Http\Controllers\LoteController;
 use App\Http\Controllers\EstadoCultivoController;
 use App\Http\Controllers\LoteEstadoController;
+
 
 //Referencias
 use App\Http\Controllers\MonedaController;
@@ -53,7 +53,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/margen-bruto', [MargenBrutoController::class, 'index'])->name('margen-bruto');
     Route::get('/cosecha', [CosechaController::class, 'index'])->name('cosecha');
     Route::get('/flujo-fondo', [FlujoFondoController::class, 'index'])->name('flujo-fondo');
-    Route::get('/rinde', [RindeController::class, 'index'])->name('rinde');
     Route::get('/estados', [EstadosController::class, 'index'])->name('estados');
 
     // ABM Usuarios (solo admin)
@@ -165,8 +164,22 @@ Route::middleware(['auth','role:admin'])->group(function () {
 });
 
 Route::middleware(['auth','role:admin'])->group(function () {
+    Route::get('lote-estados/carga-rapida', [LoteEstadoController::class, 'quickCreate'])
+        ->name('lote-estados.quick-create');
+
+    Route::post('lote-estados/carga-rapida', [LoteEstadoController::class, 'quickStore'])
+        ->name('lote-estados.quick-store');
+
+    Route::resource('lote-estados', LoteEstadoController::class);
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('estados-cultivo', EstadoCultivoController::class)
         ->only(['index', 'store', 'update', 'destroy']);
 
     Route::resource('lote-estados', LoteEstadoController::class);
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('rindes', RindeController::class);
 });

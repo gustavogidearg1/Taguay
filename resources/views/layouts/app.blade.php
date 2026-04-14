@@ -1,4 +1,3 @@
-{{-- resources/views/layouts/app.blade.php --}}
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -165,22 +164,34 @@
 
                     {{-- Left --}}
                     <ul class="navbar-nav me-auto">
-                        @auth
+    @auth
 
-                            @can('ver_ganadero')
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                        Ganaderia
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('haciendas.index') }}">
-                                                <i class="fa-solid fa-warehouse me-2"></i> Haciendas
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            @endcan
+        @can('ver_agricola')
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center fw-semibold"
+                    href="{{ route('lote-estados.quick-create') }}"
+                    style="background:#dff3e3; border-radius:10px; padding:6px 12px;">
+                    <i class="fa-solid fa-mobile-screen-button me-2"></i>
+                    Carga Estado
+                </a>
+            </li>
+        @endcan
+
+        {{-- Ganadería --}}
+        @can('ver_ganadero')
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    Ganaderia
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="{{ route('haciendas.index') }}">
+                            <i class="fa-solid fa-warehouse me-2"></i> Haciendas
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        @endcan
 
                             @can('ver_agricola')
                                 <li class="nav-item dropdown">
@@ -192,6 +203,23 @@
                                             <a class="dropdown-item" href="{{ route('lluvias.index') }}">
                                                 <i class="fa-solid fa-cloud-rain me-2"></i> Lluvias
                                             </a>
+
+                                            <a class="dropdown-item" href="{{ route('lotes.index') }}">
+                                                <i class="fa-solid fa-draw-polygon me-2"></i> Lotes
+                                            </a>
+
+                                            <a class="dropdown-item" href="{{ route('estados-cultivo.index') }}">
+                                                <i class="fa-solid fa-seedling me-2"></i> Estados de Cultivo
+                                            </a>
+
+                                            <a class="dropdown-item" href="{{ route('lote-estados.index') }}">
+                                                <i class="fa-solid fa-list-check me-2"></i> Estados por Lote
+                                            </a>
+
+                                            <a class="dropdown-item" href="{{ route('rindes.index') }}">
+                                                <i class="fa-solid fa-chart-column me-2"></i> Rindes
+                                            </a>
+
                                         </li>
                                     </ul>
                                 </li>
@@ -222,6 +250,8 @@
                                     </ul>
                                 </li>
                             @endif
+
+
 
                             {{-- ✅ ABM (Admin) con accordion y sin autocierre al click adentro --}}
                             @role('admin')
@@ -315,17 +345,7 @@
                                                         </a>
 
 
-                                                        <a class="dropdown-item" href="{{ route('lotes.index') }}">
-                                                            <i class="fa-solid fa-draw-polygon me-2"></i> Lotes
-                                                        </a>
 
-                                                        <a class="dropdown-item" href="{{ route('estados-cultivo.index') }}">
-                                                            <i class="fa-solid fa-seedling me-2"></i> Estados de Cultivo
-                                                        </a>
-
-                                                        <a class="dropdown-item" href="{{ route('lote-estados.index') }}">
-                                                            <i class="fa-solid fa-list-check me-2"></i> Estados por Lote
-                                                        </a>
 
 
                                                     </div>
@@ -344,6 +364,8 @@
 
                         @endauth
                     </ul>
+
+
 
                     {{-- Right --}}
                     <ul class="navbar-nav ms-auto">
