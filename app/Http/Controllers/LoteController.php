@@ -9,6 +9,7 @@ use App\Models\Establecimiento;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+
 class LoteController extends Controller
 {
     public function index(Request $request)
@@ -122,26 +123,31 @@ class LoteController extends Controller
     }
 
     private function validateData(Request $request, ?int $loteId = null): array
-    {
-        return $request->validate([
-            'establecimiento_id' => ['required', 'exists:establecimientos,id'],
-            'campania_id' => ['required', 'exists:campanias,id'],
-            'cultivo_id' => ['required', 'exists:cultivos,id'],
-            'nombre' => [
-                'required',
-                'string',
-                'max:100',
-                Rule::unique('lotes')
-                    ->where(fn($q) => $q->where('campania_id', $request->campania_id))
-                    ->ignore($loteId),
-            ],
-            'hectareas' => ['required', 'numeric', 'min:0.01'],
-            'ubicacion_referencia' => ['nullable', 'string', 'max:255'],
-            'latitud' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitud' => ['nullable', 'numeric', 'between:-180,180'],
-            'link_google_maps' => ['nullable', 'url', 'max:500'],
-        ], [
-            'nombre.unique' => 'Ya existe un lote con ese nombre en la campaña seleccionada.',
-        ]);
-    }
+{
+    return $request->validate([
+        'establecimiento_id' => ['required', 'exists:establecimientos,id'],
+        'campania_id' => ['required', 'exists:campanias,id'],
+        'cultivo_id' => ['nullable', 'exists:cultivos,id'],
+        'nombre' => [
+            'required',
+            'string',
+            'max:100',
+            Rule::unique('lotes')
+                ->where(function ($q) use ($request) {
+                    return $q->where('campania_id', $request->campania_id)
+                             ->where('establecimiento_id', $request->establecimiento_id);
+                })
+                ->ignore($loteId),
+        ],
+        'hectareas' => ['nullable', 'numeric', 'min:0'],
+        'ubicacion_referencia' => ['nullable', 'string', 'max:255'],
+        'latitud' => ['nullable', 'numeric', 'between:-90,90'],
+        'longitud' => ['nullable', 'numeric', 'between:-180,180'],
+        'link_google_maps' => ['nullable', 'url', 'max:500'],
+    ], [
+        'nombre.unique' => 'Ya existe un lote con ese nombre en el establecimiento y campaña seleccionados.',
+    ]);
+}
+
+
 }

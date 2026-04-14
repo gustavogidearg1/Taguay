@@ -1,5 +1,3 @@
-{{-- resources/views/contratos/_form.blade.php --}}
-
 @php
   // En create, $contrato puede venir null
   $c = $contrato ?? null;

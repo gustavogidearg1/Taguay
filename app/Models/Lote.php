@@ -56,4 +56,11 @@ class Lote extends Model
 {
     return $this->hasMany(\App\Models\LoteEstado::class);
 }
+
+public function rindes()
+{
+    return $this->hasMany(\App\Models\Rinde::class);
+}
+
+
 }

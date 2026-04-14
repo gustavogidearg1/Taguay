@@ -34,9 +34,12 @@
     </div>
 
     <div class="col-12 col-md-4">
-        <label class="form-label">Cultivo <span class="text-danger">*</span></label>
-        <select name="cultivo_id" class="form-select @error('cultivo_id') is-invalid @enderror" required>
-            <option value="">Seleccionar...</option>
+<label class="form-label">
+    Cultivo
+    <small class="text-muted">(opcional)</small>
+</label>
+            <select name="cultivo_id" class="form-select">
+    <option value="">Sin cultivo</option>
             @foreach($cultivos as $cultivo)
                 <option value="{{ $cultivo->id }}"
                     {{ old('cultivo_id', $lote->cultivo_id ?? '') == $cultivo->id ? 'selected' : '' }}>
@@ -63,14 +66,14 @@
     </div>
 
     <div class="col-12 col-md-6">
-        <label class="form-label">Hectáreas <span class="text-danger">*</span></label>
-        <input type="number"
-               step="0.01"
-               min="0.01"
-               name="hectareas"
-               class="form-control @error('hectareas') is-invalid @enderror"
-               value="{{ old('hectareas', $lote->hectareas ?? '') }}"
-               required>
+<label class="form-label">Hectáreas</label>
+
+<input type="number"
+       step="0.01"
+       min="0"
+       name="hectareas"
+       class="form-control @error('hectareas') is-invalid @enderror"
+       value="{{ old('hectareas', $lote->hectareas ?? '') }}">
         @error('hectareas')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror

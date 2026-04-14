@@ -19,10 +19,12 @@
                     Revisá los campos marcados y volvé a intentar.
                 </div>
             @endif
-
-            <form action="{{ route('lote-estados.store') }}" method="POST">
-                @include('abm.lote_estados._form')
-            </form>
+<form id="lote-estado-form"
+      action="{{ route('lote-estados.store') }}"
+      method="POST"
+      enctype="multipart/form-data">
+    @include('abm.lote_estados._form')
+</form>
         </div>
     </div>
 </div>
