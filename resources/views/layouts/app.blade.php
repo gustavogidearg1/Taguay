@@ -324,6 +324,11 @@
                                                             <i class="fa-solid fa-building-columns me-2"></i> Financieras
                                                         </a>
 
+                                                                    <a class="dropdown-item" href="{{ route('invoices.import') }}">
+                <i class="fa-solid fa-file-invoice me-2"></i>Importar Facturas IA
+            </a>
+
+
                                                     </div>
                                                 </div>
                                             </div>
