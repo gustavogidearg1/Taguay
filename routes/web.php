@@ -26,13 +26,14 @@ use App\Http\Controllers\Abm\CreditoCalificacionController;
 use App\Http\Controllers\LoteController;
 use App\Http\Controllers\EstadoCultivoController;
 use App\Http\Controllers\LoteEstadoController;
-
+use App\Http\Controllers\InvoiceImportController;
 
 //Referencias
 use App\Http\Controllers\MonedaController;
 use App\Http\Controllers\CultivoController;
 use App\Http\Controllers\CampaniaController;
 use App\Http\Controllers\Abm\FinancieraController;
+
 
 Route::get('/', function () {
     return Auth::check()
@@ -183,3 +184,8 @@ Route::middleware(['auth','role:admin'])->group(function () {
 Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('rindes', RindeController::class);
 });
+
+Route::get('/invoices/import', [InvoiceImportController::class, 'index'])->name('invoices.import');
+Route::post('/invoices/upload', [InvoiceImportController::class, 'upload'])->name('invoices.upload');
+Route::post('/invoices/process', [InvoiceImportController::class, 'process'])->name('invoices.process');
+Route::get('/invoices/download', [InvoiceImportController::class, 'download'])->name('invoices.download');

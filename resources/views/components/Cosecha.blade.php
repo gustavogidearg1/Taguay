@@ -1,64 +1,264 @@
 @extends('layouts.app')
 
-@section('title','Cosecha' )
+@section('title', 'Cosecha')
 
-  {{-- Favicon --}}
-  <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
 <style>
-    /* Asegúrate de que el body y html ocupen el 100% del alto */
-    html, body {
+
+    html,
+    body {
+        width: 100%;
         height: 100%;
         margin: 0;
         padding: 0;
-        overflow: hidden; /* Evita barras de desplazamiento */
+        overflow: hidden;
+        font-family: 'Roboto', sans-serif;
+        background: #f4f6f9;
     }
 
-    /* Contenedor principal del iframe */
+    /* CONTENEDOR POWER BI */
     .iframe-container {
-        position: relative;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
     }
 
-    /* Asegúrate de que el iframe ocupe el 100% del contenedor */
     .iframe-container iframe {
         width: 100%;
         height: 100%;
-        border: none; /* Elimina el borde predeterminado del iframe */
+        border: none;
     }
 
-    /* Estilo del botón flotante */
-    .back-button {
-        position: fixed; /* Cambia a posición fija */
-        top: 10px; /* Distancia desde la parte superior */
-        left: 10px; /* Distancia desde la izquierda */
-        z-index: 1000; /* Asegura que el botón esté por encima del iframe */
-        background: none; /* Elimina el fondo del botón */
-        border: none; /* Elimina el borde del botón */
-        padding: 0; /* Elimina el padding */
+    /* MENU FLOTANTE */
+.floating-menu {
+
+    position: fixed;
+
+    top: 15px;
+    left: 15px;
+
+    z-index: 1000;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+
+    padding: 10px;
+
+    border-radius: 14px;
+
+    background: rgba(255, 255, 255, 0.15);
+
+    backdrop-filter: blur(14px);
+
+    -webkit-backdrop-filter: blur(14px);
+
+    box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.18);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.20);
+}
+
+    /* BOTONES MATERIAL */
+    .mat-btn {
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    min-width: 140px;
+
+    padding: 8px 10px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: #333;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.10);
+}
+
+    /* HOVER */
+    .mat-btn:hover {
+
+        transform:
+            translateY(-2px);
+
+        background:
+            #f7f7f7;
+
+        box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.18);
     }
 
-    /* Estilo de la imagen del botón */
-    .back-button img {
-        width: 40px; /* Ancho de la imagen */
-        height: 40px; /* Alto de la imagen */
-        cursor: pointer; /* Cambia el cursor al pasar sobre la imagen */
+    /* ICONOS */
+.mat-btn .icon {
+
+    font-size: 14px;
+
+    width: 16px;
+
+    text-align: center;
+}
+
+    /* EFECTO CLICK */
+    .mat-btn:active {
+        transform: scale(0.98);
     }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+
+        .floating-menu {
+
+            top: 10px;
+            left: 10px;
+
+            padding: 12px;
+
+            gap: 8px;
+        }
+
+        .mat-btn {
+
+            min-width: 190px;
+
+            padding: 12px 14px;
+
+            font-size: 13px;
+        }
+    }
+
+    /* IMPRESIÓN */
+@media print {
+    .floating-menu,
+    header,
+    nav,
+    footer,
+    .navbar,
+    .sidebar {
+        display: none !important;
+    }
+
+    .iframe-container {
+        width: 100vw !important;
+        height: 100vh !important;
+    }
+}
+
 </style>
 
-<!-- Botón de retroceso -->
-<a href="{{ route('home') }}" class="back-button">
-    <img src="{{ asset('storage/images/Hacia_atras.png') }}" alt="Volver atrás">
-</a>
+{{-- MENU FLOTANTE --}}
+<div class="floating-menu">
 
-<!-- Contenedor para el iframe -->
+    {{-- VOLVER --}}
+    <a href="{{ route('home') }}" class="mat-btn">
+
+        <span class="icon">
+            ⬅
+        </span>
+
+        <span>
+            Volver
+        </span>
+
+    </a>
+
+    {{-- IMPRIMIR --}}
+    <button
+        class="mat-btn"
+        onclick="imprimirReporte()">
+
+        <span class="icon">
+            🖨
+        </span>
+
+        <span>
+            Imprimir / PDF
+        </span>
+
+    </button>
+
+    {{-- PANTALLA COMPLETA --}}
+    <button
+        class="mat-btn"
+        onclick="pantallaCompleta()">
+
+        <span class="icon">
+            ⛶
+        </span>
+
+        <span>
+            Pantalla completa
+        </span>
+
+    </button>
+
+</div>
+
+{{-- POWER BI --}}
 <div class="iframe-container">
+
     <iframe
+        id="powerbiFrame"
         title="Cosecha"
         src="https://app.powerbi.com/view?r=eyJrIjoiMjhkMzhmMTAtNzM0NS00YjJlLTkzZjEtM2ZkYmY5YjA5NDA2IiwidCI6ImZmZDgyMjAxLWJjNzUtNDA5OS05MjkzLWRlNDdiMzkyNmM5YiIsImMiOjR9"
-        allowFullScreen="true">
+        allowfullscreen="true">
     </iframe>
+
 </div>
+
+<script>
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPRIMIR / PDF
+    |--------------------------------------------------------------------------
+    */
+
+    function imprimirReporte() {
+
+        window.print();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PANTALLA COMPLETA
+    |--------------------------------------------------------------------------
+    */
+
+    function pantallaCompleta() {
+
+        let iframe = document.getElementById('powerbiFrame');
+
+        if (iframe.requestFullscreen) {
+
+            iframe.requestFullscreen();
+
+        } else if (iframe.webkitRequestFullscreen) {
+
+            iframe.webkitRequestFullscreen();
+
+        } else if (iframe.msRequestFullscreen) {
+
+            iframe.msRequestFullscreen();
+        }
+    }
+
+</script>
+
+
