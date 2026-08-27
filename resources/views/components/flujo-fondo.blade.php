@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Flujo de fondo')
+@section('title', 'Flujo de Fondo')
 
   {{-- Favicon --}}
   <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
@@ -66,20 +66,23 @@
 
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
 
-    min-width: 140px;
+    gap: 6px;
 
-    padding: 8px 10px;
+    width: 42px;
+    height: 42px;
+
+    padding: 0;
 
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
 
     background: #ffffff;
 
     color: #333;
 
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 600;
 
     text-decoration: none;
@@ -120,28 +123,54 @@
         transform: scale(0.98);
     }
 
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
 
-        .floating-menu {
+/* RESPONSIVE */
+@media (max-width: 768px) {
 
-            top: 10px;
-            left: 10px;
-
-            padding: 12px;
-
-            gap: 8px;
-        }
-
-        .mat-btn {
-
-            min-width: 190px;
-
-            padding: 12px 14px;
-
-            font-size: 13px;
-        }
+    .mobile-hide {
+        display: none !important;
     }
+
+    .floating-menu {
+        top: auto;
+        left: auto;
+
+        right: 10px;
+        bottom: 10px;
+
+        transform: none;
+
+        flex-direction: row;
+
+        padding: 4px;
+        gap: 0;
+
+        border-radius: 10px;
+
+        background: rgba(255,255,255,.88);
+
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+
+        box-shadow:
+            0 4px 12px rgba(0,0,0,.15);
+    }
+
+    .mat-btn {
+        width: 36px;
+        height: 36px;
+
+        min-width: 36px;
+
+        padding: 0;
+
+        font-size: 14px;
+
+        border-radius: 8px;
+    }
+}
+
+
 
     /* IMPRESIÓN */
 @media print {
@@ -162,50 +191,29 @@
 
 </style>
 
+
 {{-- MENU FLOTANTE --}}
 <div class="floating-menu">
 
-    {{-- VOLVER --}}
-    <a href="{{ route('home') }}" class="mat-btn">
-
-        <span class="icon">
-            ⬅
-        </span>
-
-        <span>
-            Volver
-        </span>
-
+    <a
+        href="{{ route('home') }}"
+        class="mat-btn"
+        title="Volver">
+        ⬅
     </a>
 
-    {{-- IMPRIMIR --}}
     <button
-        class="mat-btn"
-        onclick="imprimirReporte()">
-
-        <span class="icon">
-            🖨
-        </span>
-
-        <span>
-            Imprimir / PDF
-        </span>
-
+        class="mat-btn mobile-hide"
+        onclick="imprimirReporte()"
+        title="Imprimir">
+        🖨
     </button>
 
-    {{-- PANTALLA COMPLETA --}}
     <button
-        class="mat-btn"
-        onclick="pantallaCompleta()">
-
-        <span class="icon">
-            ⛶
-        </span>
-
-        <span>
-            Pantalla completa
-        </span>
-
+        class="mat-btn mobile-hide"
+        onclick="pantallaCompleta()"
+        title="Pantalla completa">
+        ⛶
     </button>
 
 </div>
