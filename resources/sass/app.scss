@@ -1,7 +1,11 @@
 // Fonts
 @import url('https://fonts.bunny.net/css?family=Nunito');
 
-// Variables
+// Funciones de Bootstrap: necesarias para usar shade-color()/tint-color()
+// dentro de nuestras variables de marca.
+@import 'bootstrap/scss/functions';
+
+// Variables (colores de marca, tipografía, etc.)
 @import 'variables';
 
 // Bootstrap
