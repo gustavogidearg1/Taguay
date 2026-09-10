@@ -21,3 +21,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Artefactos que no deben versionarse
+/vendor.zip
+/*.sql
