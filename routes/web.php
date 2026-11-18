@@ -80,9 +80,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('agricola.index')
         ->middleware('permission:ver_agricola');
 
-    Route::get('/ganadero', fn() => view('ganadero.index'))
-        ->name('ganadero.index')
-        ->middleware('permission:ver_ganadero');
+    Route::view('/ganadero', 'components.ganaderia')
+    ->name('ganadero.index')
+    ->middleware('permission:ver_ganadero');
 
     Route::get('/comercial', fn() => view('comercial.index'))
         ->name('comercial.index')
