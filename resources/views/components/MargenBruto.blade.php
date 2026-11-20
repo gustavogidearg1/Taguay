@@ -124,6 +124,89 @@
     }
 
 
+    /* AYUDA: COMO COPIAR A EXCEL */
+    .help-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 2000;
+        background: rgba(0, 0, 0, 0.45);
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    .help-overlay.open {
+        display: flex;
+    }
+
+    .help-box {
+        position: relative;
+        background: #ffffff;
+        color: #333;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 760px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 22px 26px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.30);
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+    .help-box h2 {
+        margin: 0 0 12px 0;
+        font-size: 20px;
+        color: #17503D;
+    }
+
+    .help-box ol {
+        margin: 0 0 12px 0;
+        padding-left: 22px;
+    }
+
+    .help-box li {
+        margin-bottom: 8px;
+    }
+
+    .help-box .help-note {
+        background: #f4f6f9;
+        border-left: 4px solid #D6540A;
+        border-radius: 6px;
+        padding: 10px 14px;
+        margin: 12px 0;
+        font-size: 14px;
+    }
+
+    .help-box video {
+        width: 100%;
+        border-radius: 8px;
+        margin-top: 8px;
+        background: #000;
+    }
+
+    .help-close {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        background: #f1f1f1;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .help-close:hover {
+        background: #e2e2e2;
+    }
+
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
 
@@ -175,6 +258,7 @@
     /* IMPRESIÓN */
 @media print {
     .floating-menu,
+    .help-overlay,
     header,
     nav,
     footer,
@@ -216,6 +300,57 @@
         ⛶
     </button>
 
+    <button
+        class="mat-btn mobile-hide"
+        onclick="abrirAyudaExcel()"
+        title="Cómo copiar tablas a Excel">
+        📋
+    </button>
+
+</div>
+
+{{-- AYUDA: COMO COPIAR A EXCEL --}}
+<div class="help-overlay" id="helpExcel" onclick="if (event.target === this) cerrarAyudaExcel()">
+    <div class="help-box" role="dialog" aria-modal="true" aria-labelledby="helpExcelTitulo">
+
+        <button class="help-close" onclick="cerrarAyudaExcel()" title="Cerrar">✕</button>
+
+        <h2 id="helpExcelTitulo">Cómo copiar una tabla a Excel</h2>
+
+        <ol>
+            <li>
+                Pasá el mouse sobre la tabla y tocá el ícono <strong>Modo de enfoque</strong>
+                (cuadradito con flecha, arriba a la derecha de la tabla). La tabla se agranda.
+            </li>
+            <li>
+                Hacé <strong>clic derecho</strong> sobre cualquier celda de la tabla y elegí
+                <strong>Copia &rarr; Copiar selección</strong>.
+                (<em>Copiar valor</em> copia una sola celda.)
+            </li>
+            <li>
+                Abrí Excel, hacé clic en la celda <strong>A1</strong> y pegá con <strong>Ctrl + V</strong>.
+            </li>
+            <li>
+                Para salir del modo de enfoque, tocá <strong>Volver al informe</strong> (arriba a la izquierda;
+                el menú flotante tapa parte del botón, hacé clic en la parte que se ve).
+            </li>
+        </ol>
+
+        <div class="help-note">
+            <strong>Tené en cuenta:</strong>
+            <ul style="margin: 6px 0 0 0; padding-left: 20px;">
+                <li>La fila <strong>Total</strong> no se copia: si la necesitás, sumala en Excel.</li>
+                <li>Las celdas vacías llegan como <strong>(En blanco)</strong>. Para limpiarlas: Ctrl + L,
+                    buscá <em>(En blanco)</em> y reemplazá por nada.</li>
+                <li>Esto copia de a una tabla por vez. Para otra tabla, repetí los pasos.</li>
+            </ul>
+        </div>
+
+        <video controls preload="none" id="helpExcelVideo">
+            <source src="{{ asset('videos/copiar-a-excel.mp4') }}" type="video/mp4">
+        </video>
+
+    </div>
 </div>
 
 {{-- POWER BI --}}
@@ -265,5 +400,36 @@
             iframe.msRequestFullscreen();
         }
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | AYUDA: COMO COPIAR A EXCEL
+    |--------------------------------------------------------------------------
+    */
+
+    function abrirAyudaExcel() {
+
+        document.getElementById('helpExcel').classList.add('open');
+    }
+
+    function cerrarAyudaExcel() {
+
+        document.getElementById('helpExcel').classList.remove('open');
+
+        let video = document.getElementById('helpExcelVideo');
+
+        if (video) {
+
+            video.pause();
+        }
+    }
+
+    document.addEventListener('keydown', function (e) {
+
+        if (e.key === 'Escape') {
+
+            cerrarAyudaExcel();
+        }
+    });
 
 </script>
