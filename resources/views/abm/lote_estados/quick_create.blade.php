@@ -2,6 +2,20 @@
 
 @section('title', 'Carga rápida de campo')
 
+@php
+    // Datos para el buscador de Lote (sin API, filtra en el navegador)
+    $lotesForJs = $lotes->map(function ($lote) {
+        return [
+            'id' => $lote->id,
+            'nombre' => $lote->nombre,
+            'establecimiento_id' => $lote->establecimiento_id,
+            'establecimiento' => $lote->establecimiento->nombre ?? '-',
+            'campania' => $lote->campania->name ?? '-',
+            'cultivo' => $lote->cultivo->name ?? '-',
+        ];
+    })->values();
+@endphp
+
 @section('content')
     <div class="page-wrap quick-wrap">
         <div class="card mat-card quick-card">
@@ -38,6 +52,24 @@
                     <div class="row g-3">
 
                         <div class="col-12">
+                            <label class="form-label fw-semibold">Campaña <span class="text-danger">*</span></label>
+                            <select id="campania_id" name="campania_id"
+                                class="form-select form-select-lg @error('campania_id') is-invalid @enderror"
+                                required>
+                                <option value="">Seleccionar...</option>
+                                @foreach ($campanias as $campania)
+                                    <option value="{{ $campania->id }}"
+                                        {{ (string) old('campania_id', $campaniaDefaultId) === (string) $campania->id ? 'selected' : '' }}>
+                                        {{ $campania->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('campania_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-12">
                             <label class="form-label fw-semibold">Establecimiento <span class="text-danger">*</span></label>
                             <select id="establecimiento_id" name="establecimiento_id"
                                 class="form-select form-select-lg @error('establecimiento_id') is-invalid @enderror"
@@ -57,19 +89,31 @@
 
                         <div class="col-12">
                             <label class="form-label fw-semibold">Lote <span class="text-danger">*</span></label>
-                            <select id="lote_id" name="lote_id"
-                                class="form-select form-select-lg @error('lote_id') is-invalid @enderror" required>
-                                <option value="">Seleccionar...</option>
-                                @foreach ($lotes as $lote)
-                                    <option value="{{ $lote->id }}"
-                                        data-establecimiento="{{ $lote->establecimiento_id }}"
-                                        {{ old('lote_id') == $lote->id ? 'selected' : '' }}>
-                                        {{ $lote->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="d-flex gap-2">
+                                <select id="lote_id" name="lote_id"
+                                    class="form-select form-select-lg @error('lote_id') is-invalid @enderror" required>
+                                    <option value="">Seleccionar...</option>
+                                    @foreach ($lotes as $lote)
+                                        <option value="{{ $lote->id }}"
+                                            data-establecimiento="{{ $lote->establecimiento_id }}"
+                                            data-campania="{{ $lote->campania_id }}"
+                                            {{ old('lote_id') == $lote->id ? 'selected' : '' }}>
+                                            {{ $lote->nombre }} - {{ $lote->campania->name ?? '-' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <button type="button"
+                                    class="btn btn-success btn-mat flex-shrink-0"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#loteModal"
+                                    title="Buscar lote">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <span class="d-none d-sm-inline ms-1">Buscar</span>
+                                </button>
+                            </div>
                             @error('lote_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -99,57 +143,6 @@
                             @error('fecha')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                        </div>
-
-                        {{-- GPS --}}
-                        <div class="col-12">
-                            <div class="p-3 border rounded-4 bg-light">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-                                    <div class="fw-semibold">
-                                        <i class="fa-solid fa-location-dot me-1"></i> Ubicación GPS
-                                    </div>
-
-                                    <button type="button" id="btnObtenerUbicacion" class="btn btn-outline-primary btn-sm">
-                                        Obtener ubicación actual
-                                    </button>
-                                </div>
-
-                                <div id="gpsStatus" class="small text-muted mb-3">
-                                    Todavía no se obtuvo la ubicación.
-                                </div>
-
-                                <div class="row g-3">
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Latitud</label>
-                                        <input type="text" name="latitud" id="latitud"
-                                            class="form-control @error('latitud') is-invalid @enderror"
-                                            value="{{ old('latitud') }}" readonly>
-                                        @error('latitud')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Longitud</label>
-                                        <input type="text" name="longitud" id="longitud"
-                                            class="form-control @error('longitud') is-invalid @enderror"
-                                            value="{{ old('longitud') }}" readonly>
-                                        @error('longitud')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-12">
-                                        <label class="form-label">Link Google Maps</label>
-                                        <input type="text" name="link_google_maps" id="link_google_maps"
-                                            class="form-control @error('link_google_maps') is-invalid @enderror"
-                                            value="{{ old('link_google_maps') }}" readonly>
-                                        @error('link_google_maps')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="col-12">
@@ -250,6 +243,62 @@
                             </div>
                         </div>
 
+                        {{-- GPS / Localización --}}
+                        <div class="col-12">
+                            <button type="button" class="btn btn-outline-secondary btn-sm w-100 d-flex justify-content-between align-items-center"
+                                data-bs-toggle="collapse" data-bs-target="#gpsCollapse"
+                                aria-expanded="false" aria-controls="gpsCollapse">
+                                <span><i class="fa-solid fa-location-dot me-1"></i> Localización</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+
+                            <div class="collapse mt-2" id="gpsCollapse">
+                                <div class="p-3 border rounded-4 bg-light">
+                                    <div class="d-flex justify-content-end mb-2">
+                                        <button type="button" id="btnObtenerUbicacion" class="btn btn-outline-primary btn-sm">
+                                            Obtener ubicación actual
+                                        </button>
+                                    </div>
+
+                                    <div id="gpsStatus" class="small text-muted mb-3">
+                                        Todavía no se obtuvo la ubicación.
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Latitud</label>
+                                            <input type="text" name="latitud" id="latitud"
+                                                class="form-control @error('latitud') is-invalid @enderror"
+                                                value="{{ old('latitud') }}" readonly>
+                                            @error('latitud')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Longitud</label>
+                                            <input type="text" name="longitud" id="longitud"
+                                                class="form-control @error('longitud') is-invalid @enderror"
+                                                value="{{ old('longitud') }}" readonly>
+                                            @error('longitud')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label">Link Google Maps</label>
+                                            <input type="text" name="link_google_maps" id="link_google_maps"
+                                                class="form-control @error('link_google_maps') is-invalid @enderror"
+                                                value="{{ old('link_google_maps') }}" readonly>
+                                            @error('link_google_maps')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- Cámara directa --}}
                         <div class="col-12">
                             <label class="form-label fw-semibold">Imagen 1</label>
@@ -301,6 +350,38 @@
     </div>
 </div>
 
+{{-- MODAL BUSCADOR DE LOTE --}}
+<div class="modal fade" id="loteModal" tabindex="-1" aria-labelledby="loteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content mat-card">
+            <div class="modal-header header-mint">
+                <h5 class="modal-title mat-title" id="loteModalLabel">
+                    <i class="fa-solid fa-magnifying-glass me-2"></i> Buscar lote
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input id="loteSearchInput" type="text" class="form-control form-control-lg"
+                        placeholder="Nombre de lote, establecimiento o campaña...">
+                </div>
+
+                <div id="loteResults" class="list-group"></div>
+
+                <div id="loteEmpty" class="text-center py-4 text-muted">
+                    <i class="fa-solid fa-magnifying-glass"></i> Escribí para buscar
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary btn-mat" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('styles')
@@ -320,6 +401,30 @@
 
         .quick-extra .form-check-input {
             transform: scale(1.2);
+        }
+
+        [data-bs-toggle="collapse"] .fa-chevron-down {
+            transition: transform .2s ease;
+        }
+
+        [data-bs-toggle="collapse"][aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        .lote-result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+        }
+
+        .lote-result-item .lote-result-info .lote-result-nombre {
+            font-weight: 700;
+        }
+
+        .lote-result-item .lote-result-info .lote-result-detalle {
+            font-size: .85rem;
+            color: var(--muted, #6c757d);
         }
 
         @media (max-width: 768px) {
@@ -405,6 +510,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const allOptions = Array.from(loteSelect.querySelectorAll('option'));
 
         function filtrarLotes() {
+            // El Lote se filtra solo por Establecimiento. La Campaña queda como
+            // dato informativo/por defecto, pero no oculta lotes de otras campañas.
             const establecimientoId = establecimientoSelect.value;
             const loteActual = loteSelect.value;
 
@@ -436,6 +543,106 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         filtrarLotes();
+
+        // =========================
+        // BUSCADOR DE LOTE (MODAL)
+        // =========================
+        const loteModalEl = document.getElementById('loteModal');
+        const loteSearchInput = document.getElementById('loteSearchInput');
+        const loteResultsEl = document.getElementById('loteResults');
+        const loteEmptyEl = document.getElementById('loteEmpty');
+
+        const allLotes = @json($lotesForJs ?? []);
+
+        if (loteModalEl && loteSearchInput && loteResultsEl && loteEmptyEl) {
+            const debounce = (fn, ms = 200) => {
+                let t;
+                return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+            };
+
+            function renderLotes(rows, emptyMessage) {
+                if (!rows.length) {
+                    loteResultsEl.innerHTML = '';
+                    loteEmptyEl.style.display = 'block';
+                    loteEmptyEl.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> ${emptyMessage}`;
+                    return;
+                }
+
+                loteEmptyEl.style.display = 'none';
+
+                loteResultsEl.innerHTML = rows.map(l => `
+                    <div class="list-group-item lote-result-item">
+                        <div class="lote-result-info">
+                            <div class="lote-result-nombre">${l.nombre}</div>
+                            <div class="lote-result-detalle">${l.establecimiento} · ${l.campania} · ${l.cultivo}</div>
+                        </div>
+                        <button type="button" class="btn btn-success btn-sm flex-shrink-0"
+                            data-id="${l.id}" data-establecimiento="${l.establecimiento_id}">
+                            Seleccionar
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            // Lotes del Establecimiento actualmente elegido (si no hay ninguno, no se filtra por eso)
+            function lotesDelEstablecimiento() {
+                const establecimientoId = establecimientoSelect.value;
+
+                return establecimientoId
+                    ? allLotes.filter(l => String(l.establecimiento_id) === String(establecimientoId))
+                    : allLotes;
+            }
+
+            function doSearchLotes(q) {
+                const term = (q || '').trim().toLowerCase();
+                const base = lotesDelEstablecimiento();
+
+                const rows = (term
+                    ? base.filter(l =>
+                        String(l.nombre || '').toLowerCase().includes(term) ||
+                        String(l.establecimiento || '').toLowerCase().includes(term) ||
+                        String(l.campania || '').toLowerCase().includes(term)
+                    )
+                    : base
+                ).slice(0, 200);
+
+                const emptyMessage = establecimientoSelect.value
+                    ? 'No hay lotes para el establecimiento elegido'
+                    : 'Sin resultados';
+
+                renderLotes(rows, emptyMessage);
+            }
+
+            const debouncedLoteSearch = debounce(doSearchLotes, 200);
+
+            loteModalEl.addEventListener('show.bs.modal', () => {
+                loteSearchInput.value = '';
+                doSearchLotes('');
+                setTimeout(() => loteSearchInput.focus(), 250);
+            });
+
+            loteSearchInput.addEventListener('input', (e) => debouncedLoteSearch(e.target.value));
+
+            loteResultsEl.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-id]');
+                if (!btn) return;
+
+                const loteId = String(btn.dataset.id || '');
+                const establecimientoId = String(btn.dataset.establecimiento || '');
+
+                // Al elegir un lote de otro establecimiento, lo acomodamos también
+                // para que el select de Establecimiento quede consistente.
+                if (establecimientoId && establecimientoSelect.value !== establecimientoId) {
+                    establecimientoSelect.value = establecimientoId;
+                    filtrarLotes();
+                }
+
+                loteSelect.value = loteId;
+                loteSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+                bootstrap.Modal.getInstance(loteModalEl)?.hide();
+            });
+        }
     }
 
     // =========================

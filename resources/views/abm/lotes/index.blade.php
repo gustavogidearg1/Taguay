@@ -67,12 +67,12 @@
                 </div>
 
                 <div class="col-12 d-flex justify-content-end gap-2">
-                    <a href="{{ route('lotes.index') }}" class="btn btn-outline-secondary btn-mat">
-                        Limpiar
-                    </a>
                     <button type="submit" class="btn btn-primary btn-mat">
                         <i class="fa-solid fa-filter me-1"></i> Filtrar
                     </button>
+                    <a href="{{ route('lotes.index') }}" class="btn btn-outline-secondary btn-mat">
+                        Limpiar
+                    </a>
                 </div>
             </form>
 

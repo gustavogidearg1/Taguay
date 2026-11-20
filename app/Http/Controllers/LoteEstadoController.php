@@ -6,6 +6,7 @@ use App\Models\Lote;
 use App\Models\LoteEstado;
 use App\Models\EstadoCultivo;
 use App\Models\Establecimiento;
+use App\Models\Campania;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -168,7 +169,16 @@ class LoteEstadoController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return view('abm.lote_estados.quick_create', compact('lotes', 'estados', 'establecimientos'));
+        $campanias = Campania::where('activo', true)
+            ->orderByDesc('codfinneg')
+            ->get();
+
+        // Por defecto se preselecciona la campaña activa más reciente (hoy: 26/27).
+        $campaniaDefaultId = old('campania_id', $campanias->first()->id ?? null);
+
+        return view('abm.lote_estados.quick_create', compact(
+            'lotes', 'estados', 'establecimientos', 'campanias', 'campaniaDefaultId'
+        ));
     }
 
     public function quickStore(Request $request)
