@@ -1,104 +1,105 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-  <div class="card">
-    <div class="card-header">Editar Usuario</div>
+<div class="container py-3">
+  <div class="card mat-card">
+    <div class="card-header header-mint py-3">
+      <h3 class="mat-title mb-0"><i class="fa-solid fa-user-pen me-2"></i> Editar Usuario</h3>
+    </div>
+
     <div class="card-body">
+      @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+      @endif
+
       <form method="POST" action="{{ route('users.update', $user->id) }}" autocomplete="off">
         @csrf
         @method('PUT')
 
-        <div class="mb-3">
-          <label class="form-label">Nombre</label>
-          <input type="text"
-                 class="form-control @error('name') is-invalid @enderror"
-                 name="name"
-                 value="{{ old('name', $user->name) }}"
-                 required>
-          @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
-        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold">Nombre</label>
+            <input type="text"
+                   class="form-control @error('name') is-invalid @enderror"
+                   name="name"
+                   value="{{ old('name', $user->name) }}"
+                   required>
+            @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+          </div>
 
-        <div class="mb-3">
-          <label class="form-label">Email</label>
-          <input type="email"
-                 class="form-control @error('email') is-invalid @enderror"
-                 name="email"
-                 value="{{ old('email', $user->email) }}"
-                 required>
-          @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
-        </div>
-
-       <div class="mb-3">
-    <label class="form-label">
-      Nueva Contraseña
-      <small class="text-muted">(solo cambiarla)</small>
-    </label>
-    <input type="password"
-           class="form-control @error('password') is-invalid @enderror"
-           name="password"
-           autocomplete="new-password">
-    @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
-  </div>
-
-  <div class="mb-3">
-    <label class="form-label">Confirmar Nueva Contraseña</label>
-    <input type="password"
-           class="form-control"
-           name="password_confirmation"
-           autocomplete="new-password">
-  </div>
-
-
-
-        {{-- ROL BASE --}}
-        <div class="mb-3">
-          <label class="form-label">Rol (base)</label>
-          @php
-            $selectedRole = old('roles.0', $currentRoles[0] ?? 'cliente');
-          @endphp
-          <select class="form-select" name="roles[]">
-            @foreach($roles as $role)
-              <option value="{{ $role->name }}" @selected($selectedRole === $role->name)>
-                {{ $role->name }}
-              </option>
-            @endforeach
-          </select>
-        </div>
-
-        {{-- PERMISOS / ÁREAS --}}
-        <div class="mb-3">
-          <label class="form-label">Áreas habilitadas</label>
-
-          @php
-            $selectedPerms = old('permissions', $currentPerms ?? []);
-            $labels = [
-              'ver_agricola'  => 'Agrícola',
-              'ver_ganadero'  => 'Ganadero',
-              'ver_comercial' => 'Comercial',
-            ];
-          @endphp
-
-          <div class="d-flex flex-wrap gap-3">
-            @foreach($perms as $perm)
-              <div class="form-check">
-                <input class="form-check-input"
-                       type="checkbox"
-                       name="permissions[]"
-                       id="perm_{{ $perm->name }}"
-                       value="{{ $perm->name }}"
-                       @checked(in_array($perm->name, $selectedPerms))>
-                <label class="form-check-label" for="perm_{{ $perm->name }}">
-                  {{ $labels[$perm->name] ?? $perm->name }}
-                </label>
-              </div>
-            @endforeach
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold">Email</label>
+            <input type="email"
+                   class="form-control @error('email') is-invalid @enderror"
+                   name="email"
+                   value="{{ old('email', $user->email) }}"
+                   autocomplete="off"
+                   required>
+            @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Actualizar</button>
+        {{-- CONTRASEÑA: solo se cambia si se tilda el interruptor.
+             Los campos quedan deshabilitados para que el navegador no los autocomplete. --}}
+        @php $cambiarPassword = (bool) old('cambiar_password'); @endphp
+        <div class="mb-4 p-3 border rounded-3 bg-light">
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch"
+                   name="cambiar_password" id="cambiar_password" value="1"
+                   @checked($cambiarPassword)>
+            <label class="form-check-label fw-semibold" for="cambiar_password">
+              Cambiar contraseña
+            </label>
+            <div class="form-text mt-0">Si no lo tildás, el usuario sigue con la contraseña que ya tenía.</div>
+          </div>
+
+          <div id="passwordCampos" class="row g-3 mt-1 {{ $cambiarPassword ? '' : 'd-none' }}">
+            <div class="col-12 col-md-6">
+              <label class="form-label">Nueva contraseña</label>
+              <input type="password"
+                     class="form-control @error('password') is-invalid @enderror"
+                     name="password"
+                     autocomplete="new-password"
+                     @disabled(! $cambiarPassword)>
+              @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Confirmar nueva contraseña</label>
+              <input type="password"
+                     class="form-control"
+                     name="password_confirmation"
+                     autocomplete="new-password"
+                     @disabled(! $cambiarPassword)>
+            </div>
+          </div>
+        </div>
+
+        @include('users._accesos', [
+          'selectedRoles'    => old('roles', $currentRoles),
+          'selectedReportes' => old('reportes', $currentReportes),
+        ])
+
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-success">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Actualizar
+          </button>
+        </div>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+  // Muestra/oculta y habilita/deshabilita los campos de contraseña
+  document.getElementById('cambiar_password').addEventListener('change', function () {
+    const campos = document.getElementById('passwordCampos');
+    campos.classList.toggle('d-none', !this.checked);
+    campos.querySelectorAll('input').forEach(function (input) {
+      input.disabled = !this.checked;
+      if (!this.checked) input.value = '';
+    }, this);
+  });
+</script>
 @endsection

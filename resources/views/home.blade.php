@@ -228,6 +228,13 @@
                 font-size: 1.55rem;
             }
         }
+        .btn-estados-lote .fa-chevron-down {
+            transition: transform .2s ease;
+        }
+
+        .btn-estados-lote[aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(180deg);
+        }
     </style>
 
     <div class="home-page">
@@ -246,6 +253,8 @@
                 {{-- Tarjetas principales --}}
                 <div class="row g-4">
 
+                    {{-- Reporte Agrícola: Margen Bruto y Cosecha (permiso reporte_agricola) --}}
+                    @can('reporte_agricola')
                     {{-- Margen Bruto --}}
                     <div class="col-12 col-md-6 col-lg-3">
                         <div class="module-card">
@@ -304,9 +313,11 @@
                         </div>
                     </div>
 
-                    {{-- Flujo de fondo --}}
-                    <div class="col-12 col-md-6 col-lg-3">
-                        @if (Auth::user()->role_id !== 4)
+                    @endcan
+
+                    {{-- Flujo de fondo (permiso reporte_flujo_fondo) --}}
+                    @can('reporte_flujo_fondo')
+                        <div class="col-12 col-md-6 col-lg-3">
                             <div class="module-card">
                                 <div>
                                     <div class="module-icon-wrap">
@@ -332,37 +343,11 @@
                                     </div>
                                 </div>
                             </div>
-                        @else
-                            <div class="module-card disabled-card">
-                                <div>
-                                    <div class="module-icon-wrap">
-                                        <img src="{{ asset('storage/images/BtnFlujoFondo.png') }}" class="module-icon"
-                                            alt="Flujo de fondo">
-                                    </div>
+                        </div>
+                    @endcan
 
-                                    <h3 class="module-title">Flujo de fondo</h3>
-                                    <div class="module-line"></div>
-
-                                    <p class="module-description">
-                                        Acceso al analisis financiero y flujo de fondos.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <span class="btn-module disabled">
-                                        Solo lectura
-                                    </span>
-
-                                    <div class="warning-mini">
-                                        Vista solamente para Administradores y Editores
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- Ganadería --}}
-                    @can('ver_ganadero')
+                    {{-- Ganadería (permiso reporte_ganadero) --}}
+                    @can('reporte_ganadero')
                         <div class="col-12 col-md-6 col-lg-3">
                             <div class="module-card">
                                 <div>
@@ -394,6 +379,47 @@
                     @endcan
 
                 </div>
+
+                {{-- Sin reportes ni rol Agrícola: mensaje para que pida acceso --}}
+                @if (! $tieneReportes && ! auth()->user()->can('ver_agricola'))
+                    <div class="alert alert-light border text-center mt-2">
+                        Todavía no tenés reportes habilitados. Pedile acceso al administrador.
+                    </div>
+                @endif
+
+                {{-- Estados por Lote: rol Agrícola. Abierto por defecto si no hay tarjetas de reportes --}}
+                @can('ver_agricola')
+                    <div class="mt-4">
+                        <button type="button"
+                            class="btn btn-dark w-100 d-flex justify-content-between align-items-center py-2 px-3 btn-estados-lote"
+                            data-bs-toggle="collapse" data-bs-target="#homeEstadosLote"
+                            aria-expanded="{{ $tablaAbierta ? 'true' : 'false' }}" aria-controls="homeEstadosLote">
+                            <span><i class="fa-solid fa-list-check me-2"></i> Estados por Lote
+                                <small class="opacity-75 ms-1">
+                                    ({{ auth()->user()->hasRole('admin') ? 'últimos movimientos' : 'mis últimos movimientos' }})
+                                </small>
+                            </span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+
+                        <div class="collapse {{ $tablaAbierta ? 'show' : '' }}" id="homeEstadosLote">
+                            <div class="card mat-card mt-2">
+                                <div class="card-body">
+                                    <div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
+                                        <a href="{{ route('lote-estados.quick-create') }}" class="btn btn-success btn-sm">
+                                            <i class="fa-solid fa-mobile-screen-button me-1"></i> Carga Rápida
+                                        </a>
+                                        <a href="{{ route('lote-estados.index') }}" class="btn btn-outline-primary btn-sm">
+                                            Ver todos <span aria-hidden="true">&rarr;</span>
+                                        </a>
+                                    </div>
+
+                                    @include('abm.lote_estados._tabla', ['registros' => $registros])
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endcan
 
                 {{-- Beneficios / información --}}
 

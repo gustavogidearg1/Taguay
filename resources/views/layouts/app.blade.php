@@ -204,28 +204,18 @@
                                                 <i class="fa-solid fa-cloud-rain me-2"></i> Lluvias
                                             </a>
 
-                                            <a class="dropdown-item" href="{{ route('lotes.index') }}">
-                                                <i class="fa-solid fa-draw-polygon me-2"></i> Lotes
-                                            </a>
-
-                                            <a class="dropdown-item" href="{{ route('estados-cultivo.index') }}">
-                                                <i class="fa-solid fa-seedling me-2"></i> Estados de Cultivo
-                                            </a>
-
                                             <a class="dropdown-item" href="{{ route('lote-estados.index') }}">
                                                 <i class="fa-solid fa-list-check me-2"></i> Estados por Lote
                                             </a>
 
-                                            <a class="dropdown-item" href="{{ route('rindes.index') }}">
-                                                <i class="fa-solid fa-chart-column me-2"></i> Rindes
-                                            </a>
+                                            {{-- Lotes, Estados de Cultivo y Rindes se movieron a ABM -> Agrícola (solo admin) --}}
 
                                         </li>
                                     </ul>
                                 </li>
                             @endcan
 
-                            @if (auth()->user()->hasRole('admin') || auth()->user()->can('ver_comercial'))
+                            @can('ver_comercial')
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" role="button"
                                         data-bs-toggle="dropdown">
@@ -249,7 +239,7 @@
                                         </li>
                                     </ul>
                                 </li>
-                            @endif
+                            @endcan
 
 
 
@@ -284,6 +274,15 @@
                                                         </a>
                                                         <a class="dropdown-item" href="{{ route('campanias.index') }}">
                                                             <i class="fa-solid fa-calendar-days me-2"></i> Campañas
+                                                        </a>
+                                                        <a class="dropdown-item" href="{{ route('lotes.index') }}">
+                                                            <i class="fa-solid fa-draw-polygon me-2"></i> Lotes
+                                                        </a>
+                                                        <a class="dropdown-item" href="{{ route('estados-cultivo.index') }}">
+                                                            <i class="fa-solid fa-seedling me-2"></i> Estados de Cultivo
+                                                        </a>
+                                                        <a class="dropdown-item" href="{{ route('rindes.index') }}">
+                                                            <i class="fa-solid fa-chart-column me-2"></i> Rindes
                                                         </a>
                                                     </div>
                                                 </div>

@@ -53,6 +53,20 @@
 
                 <div class="col-12 col-md-4">
                     <div class="kv">
+                        <div class="k">Cultivo</div>
+                        <div class="v">{{ $registro->cultivo->name ?? $registro->lote->cultivo->name ?? '-' }}</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="kv">
+                        <div class="k">Propiedad</div>
+                        <div class="v">{{ $registro->propietario ? 'Propio (Taguay)' : 'Socio' }}</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="kv">
                         <div class="k">Usuario</div>
                         <div class="v">{{ $registro->user->name ?? '-' }}</div>
                     </div>

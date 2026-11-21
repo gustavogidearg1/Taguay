@@ -50,10 +50,13 @@ Route::get('/getJsonData', [TaguayController::class, 'getJsonData'])->name('getJ
 
 Route::middleware(['auth'])->group(function () {
 
-    // Pantallas generales
-    Route::get('/margen-bruto', [MargenBrutoController::class, 'index'])->name('margen-bruto');
-    Route::get('/cosecha', [CosechaController::class, 'index'])->name('cosecha');
-    Route::get('/flujo-fondo', [FlujoFondoController::class, 'index'])->name('flujo-fondo');
+    // Reportes del Home: cada uno protegido por su permiso de reporte (ver App\Support\Permisos)
+    Route::get('/margen-bruto', [MargenBrutoController::class, 'index'])->name('margen-bruto')
+        ->middleware('permission:reporte_agricola');
+    Route::get('/cosecha', [CosechaController::class, 'index'])->name('cosecha')
+        ->middleware('permission:reporte_agricola');
+    Route::get('/flujo-fondo', [FlujoFondoController::class, 'index'])->name('flujo-fondo')
+        ->middleware('permission:reporte_flujo_fondo');
     Route::get('/estados', [EstadosController::class, 'index'])->name('estados');
 
     // ABM Usuarios (solo admin)
@@ -80,9 +83,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('agricola.index')
         ->middleware('permission:ver_agricola');
 
+    // Reporte de Ganadería (tarjeta del Home)
     Route::view('/ganadero', 'components.ganaderia')
-    ->name('ganadero.index')
-    ->middleware('permission:ver_ganadero');
+        ->name('ganadero.index')
+        ->middleware('permission:reporte_ganadero');
 
     Route::get('/comercial', fn() => view('comercial.index'))
         ->name('comercial.index')
@@ -110,7 +114,8 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::delete('/campanias/{campania}', [CampaniaController::class, 'destroy'])->name('campanias.destroy');
 });
 
-Route::middleware(['auth','role:admin'])->group(function () {
+// Comerciales: rol Comercial (o admin)
+Route::middleware(['auth','permission:ver_comercial'])->group(function () {
     Route::resource('contratos', ContratoController::class);
 
     // ✅ export respetando filtros
@@ -146,17 +151,14 @@ Route::middleware(['auth','role:admin'])->group(function () {
         ->only(['index','store','update','destroy']);
 });
 
-Route::middleware(['auth'])->group(function () {
-  Route::resource('compras', CompraController::class);
-});
+// Comerciales: rol Comercial (o admin). Los export antes estaban sin login.
+Route::middleware(['auth','permission:ver_comercial'])->group(function () {
+    Route::get('/compras/export/excel', [CompraController::class, 'exportExcel'])->name('compras.export.excel');
+    Route::get('/compras/export/pdf',   [CompraController::class, 'exportPdf'])->name('compras.export.pdf');
+    Route::get('/compras/{compra}/pdf', [CompraController::class, 'exportShowPdf'])
+        ->name('compras.show_pdf');
 
-Route::get('/compras/export/excel', [CompraController::class, 'exportExcel'])->name('compras.export.excel');
-Route::get('/compras/export/pdf',   [CompraController::class, 'exportPdf'])->name('compras.export.pdf');
-Route::get('/compras/{compra}/pdf', [CompraController::class, 'exportShowPdf'])
-  ->name('compras.show_pdf');
-
-
-Route::middleware(['auth','role:admin'])->group(function () {
+    Route::resource('compras', CompraController::class);
     Route::resource('creditos-calificaciones', CreditoCalificacionController::class);
 });
 
@@ -164,7 +166,9 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('lotes', LoteController::class);
 });
 
-Route::middleware(['auth','role:admin'])->group(function () {
+// Estados por Lote y Carga Rápida: rol Agrícola (o admin).
+// Un no-admin solo ve/edita sus propios registros (ver LoteEstadoController).
+Route::middleware(['auth','permission:ver_agricola'])->group(function () {
     Route::get('lote-estados/carga-rapida', [LoteEstadoController::class, 'quickCreate'])
         ->name('lote-estados.quick-create');
 
@@ -177,15 +181,16 @@ Route::middleware(['auth','role:admin'])->group(function () {
 Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('estados-cultivo', EstadoCultivoController::class)
         ->only(['index', 'store', 'update', 'destroy']);
-
-    Route::resource('lote-estados', LoteEstadoController::class);
 });
 
 Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('rindes', RindeController::class);
 });
 
-Route::get('/invoices/import', [InvoiceImportController::class, 'index'])->name('invoices.import');
-Route::post('/invoices/upload', [InvoiceImportController::class, 'upload'])->name('invoices.upload');
-Route::post('/invoices/process', [InvoiceImportController::class, 'process'])->name('invoices.process');
-Route::get('/invoices/download', [InvoiceImportController::class, 'download'])->name('invoices.download');
+// Importación de facturas: solo admin (antes estaba sin login)
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::get('/invoices/import', [InvoiceImportController::class, 'index'])->name('invoices.import');
+    Route::post('/invoices/upload', [InvoiceImportController::class, 'upload'])->name('invoices.upload');
+    Route::post('/invoices/process', [InvoiceImportController::class, 'process'])->name('invoices.process');
+    Route::get('/invoices/download', [InvoiceImportController::class, 'download'])->name('invoices.download');
+});

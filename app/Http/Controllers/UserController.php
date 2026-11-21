@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\Permisos;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\Validation\Rule;
-
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+use Illuminate\Validation\Rules;
 
 class UserController extends Controller
 {
@@ -17,8 +16,7 @@ class UserController extends Controller
     {
         $this->middleware('auth');
 
-        // 🔒 ABM Usuarios: solo admin
-        // (requiere que esté registrado el middleware 'role' de Spatie en bootstrap/app.php)
+        // ABM Usuarios: solo admin
         $this->middleware('role:admin');
     }
 
@@ -26,64 +24,54 @@ class UserController extends Controller
        INDEX
     ========================== */
     public function index(Request $request)
-{
-    $search = trim((string) $request->get('q', ''));
-    $sort   = $request->get('sort', 'name');   // name | email | role
-    $order  = $request->get('order', 'asc');   // asc | desc
-    $perPage = (int) $request->get('per_page', 10);
-    if (!in_array($perPage, [10,20,50,100], true)) $perPage = 10;
+    {
+        $search  = trim((string) $request->get('q', ''));
+        $rol     = (string) $request->get('role');
+        $reporte = (string) $request->get('reporte');
+        $sort    = in_array($request->get('sort'), ['name', 'email'], true) ? $request->get('sort') : 'name';
+        $order   = $request->get('order') === 'desc' ? 'desc' : 'asc';
+        $perPage = (int) $request->get('per_page', 10);
+        if (! in_array($perPage, [10, 20, 50, 100], true)) {
+            $perPage = 10;
+        }
 
-    $q = User::query()
-        ->with(['roles', 'permissions']); // permissions = direct permissions
-
-    if ($search !== '') {
-        $q->where(function ($w) use ($search) {
-            $w->where('name', 'like', "%{$search}%")
-              ->orWhere('email', 'like', "%{$search}%");
-        });
-    }
-
-    if ($sort === 'role') {
-        // orden por rol (join con tabla de spatie roles)
-        $q->leftJoin('model_has_roles as mhr', function ($join) {
-                $join->on('mhr.model_id', '=', 'users.id')
-                     ->where('mhr.model_type', '=', \App\Models\User::class);
+        $users = User::query()
+            ->with(['roles', 'permissions'])
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($w) use ($search) {
+                    $w->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
             })
-          ->leftJoin('roles', 'roles.id', '=', 'mhr.role_id')
-          ->orderBy('roles.name', $order)
-          ->select('users.*');
-    } else {
-        $allowed = ['name','email','id','created_at'];
-        if (!in_array($sort, $allowed, true)) $sort = 'name';
-        $q->orderBy($sort, $order);
+            ->when(array_key_exists($rol, Permisos::ROLES), fn ($q) => $q->role($rol))
+            // Un reporte se ve si está tildado o si el usuario es admin
+            ->when(array_key_exists($reporte, Permisos::REPORTES), function ($q) use ($reporte) {
+                $q->where(function ($w) use ($reporte) {
+                    $w->whereHas('permissions', fn ($p) => $p->where('name', $reporte))
+                      ->orWhereHas('roles', fn ($r) => $r->where('name', 'admin'));
+                });
+            })
+            ->orderBy($sort, $order)
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('users.index', [
+            'users'    => $users,
+            'search'   => $search,
+            'sort'     => $sort,
+            'order'    => $order,
+            'perPage'  => $perPage,
+            'roles'    => Permisos::ROLES,
+            'reportes' => Permisos::REPORTES,
+        ]);
     }
-
-    $users = $q->paginate($perPage)->appends([
-        'q' => $search,
-        'sort' => $sort,
-        'order' => $order,
-        'per_page' => $perPage,
-    ]);
-
-    // labels para permisos (áreas)
-    $permLabels = [
-        'ver_agricola'  => 'Agrícola',
-        'ver_ganadero'  => 'Ganadero',
-        'ver_comercial' => 'Comercial',
-    ];
-
-    return view('users.index', compact('users','search','sort','order','perPage','permLabels'));
-}
 
     /* =========================
        CREATE
     ========================== */
     public function create()
     {
-        $roles = Role::query()->orderBy('name')->get();
-        $perms = Permission::query()->orderBy('name')->get();
-
-        return view('users.create', compact('roles', 'perms'));
+        return view('users.create', $this->datosFormulario());
     }
 
     /* =========================
@@ -91,27 +79,21 @@ class UserController extends Controller
     ========================== */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name'     => ['required','string','max:255'],
-            'email'    => ['required','string','email','max:255','unique:users,email'],
-            'password' => ['required','confirmed', Rules\Password::defaults()],
+        $data = $request->validate(array_merge([
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], $this->reglasAccesos()));
 
-            // Spatie
-            'roles'          => ['nullable','array'],
-            'roles.*'        => ['string', 'exists:roles,name'],
-            'permissions'    => ['nullable','array'],
-            'permissions.*'  => ['string', 'exists:permissions,name'],
-        ]);
+        DB::transaction(function () use ($data) {
+            $user = User::create([
+                'name'     => $data['name'],
+                'email'    => $data['email'],
+                'password' => Hash::make($data['password']),
+            ]);
 
-        $user = User::create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
-
-        // Rol por defecto si no eligió
-        $user->syncRoles($data['roles'] ?? ['cliente']);
-        $user->syncPermissions($data['permissions'] ?? []);
+            $this->sincronizarAccesos($user, $data);
+        });
 
         return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente');
     }
@@ -121,63 +103,61 @@ class UserController extends Controller
     ========================== */
     public function edit(User $user)
     {
-        $roles = Role::query()->orderBy('name')->get();
-        $perms = Permission::query()->orderBy('name')->get();
-
-        $currentRoles = $user->roles->pluck('name')->values()->all();
-        $currentPerms = $user->getDirectPermissions()->pluck('name')->values()->all();
-        // si querés mostrar permisos heredados por roles:
-        // $allPerms = $user->getAllPermissions()->pluck('name')->all();
-
-        return view('users.edit', compact('user','roles','perms','currentRoles','currentPerms'));
+        return view('users.edit', array_merge($this->datosFormulario(), [
+            'user'            => $user,
+            'currentRoles'    => $user->roles->pluck('name')->all(),
+            'currentReportes' => $user->getDirectPermissions()->pluck('name')->all(),
+        ]));
     }
 
     /* =========================
        UPDATE
     ========================== */
     public function update(Request $request, User $user)
-{
-    $rules = [
-        'name'  => ['required','string','max:255'],
-        'email' => ['required','string','email','max:255', Rule::unique('users','email')->ignore($user->id)],
+    {
+        // La contraseña solo se cambia si se tildó "Cambiar contraseña".
+        // Así el autocompletado del navegador no obliga a cambiar la clave.
+        $cambiarPassword = $request->boolean('cambiar_password');
 
-        // Spatie
-        'roles'          => ['nullable','array'],
-        'roles.*'        => ['string','exists:roles,name'],
-        'permissions'    => ['nullable','array'],
-        'permissions.*'  => ['string','exists:permissions,name'],
-    ];
+        $rules = array_merge([
+            'name'  => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+        ], $this->reglasAccesos());
 
-    // ✅ Solo validar password si el usuario escribió algo
-    if ($request->filled('password')) {
-        $rules['password'] = ['required','confirmed', Rules\Password::defaults()];
+        if ($cambiarPassword) {
+            $rules['password'] = ['required', 'confirmed', Rules\Password::defaults()];
+        }
+
+        $data = $request->validate($rules);
+
+        // Evita que un admin se quite a sí mismo el rol de Administrador
+        if ($user->is(auth()->user()) && ! in_array('admin', $data['roles'] ?? [], true)) {
+            return back()->withInput()->with('error', 'No podés quitarte el rol de Administrador a vos mismo.');
+        }
+
+        DB::transaction(function () use ($user, $data, $cambiarPassword) {
+            $update = [
+                'name'  => $data['name'],
+                'email' => $data['email'],
+            ];
+
+            if ($cambiarPassword) {
+                $update['password'] = Hash::make($data['password']);
+            }
+
+            $user->update($update);
+
+            $this->sincronizarAccesos($user, $data);
+        });
+
+        return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente');
     }
-
-    $data = $request->validate($rules);
-
-    $update = [
-        'name'  => $data['name'],
-        'email' => $data['email'],
-    ];
-
-    if ($request->filled('password')) {
-        $update['password'] = Hash::make($request->password);
-    }
-
-    $user->update($update);
-
-    $user->syncRoles($data['roles'] ?? ['cliente']);
-    $user->syncPermissions($data['permissions'] ?? []);
-
-    return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente');
-}
 
     /* =========================
        DESTROY
     ========================== */
     public function destroy(User $user)
     {
-        // Opcional: no permitir borrarse a sí mismo
         if (auth()->id() === $user->id) {
             return back()->with('error', 'No podés eliminar tu propio usuario.');
         }
@@ -197,5 +177,40 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->back()->with('success', 'Contraseña restablecida. Nueva clave: ' . $nuevaClave);
+    }
+
+    /* =========================
+       HELPERS
+    ========================== */
+
+    /** Datos comunes para los formularios de alta y edición. */
+    private function datosFormulario(): array
+    {
+        return [
+            'roles'            => Permisos::ROLES,
+            'rolesDescripcion' => Permisos::ROLES_DESCRIPCION,
+            'reportes'         => Permisos::REPORTES,
+        ];
+    }
+
+    /** Reglas de validación de roles y reportes. */
+    private function reglasAccesos(): array
+    {
+        return [
+            'roles'      => ['nullable', 'array'],
+            'roles.*'    => ['string', Rule::in(array_keys(Permisos::ROLES))],
+            'reportes'   => ['nullable', 'array'],
+            'reportes.*' => ['string', Rule::in(array_keys(Permisos::REPORTES))],
+        ];
+    }
+
+    /**
+     * Asigna roles y reportes al usuario.
+     * Los permisos de área (ver_agricola, etc.) los otorgan los roles: no se asignan directo.
+     */
+    private function sincronizarAccesos(User $user, array $data): void
+    {
+        $user->syncRoles($data['roles'] ?? []);
+        $user->syncPermissions($data['reportes'] ?? []);
     }
 }

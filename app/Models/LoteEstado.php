@@ -9,6 +9,7 @@ class LoteEstado extends Model
     protected $fillable = [
         'lote_id',
         'estado_cultivo_id',
+        'cultivo_id',
         'user_id',
         'fecha',
         'observacion',
@@ -20,6 +21,7 @@ class LoteEstado extends Model
         'chasis',
         'chofer',
         'pertenece_empresa',
+        'propietario',
         'lluvia',
         'humedad',
         'silo',
@@ -37,6 +39,7 @@ class LoteEstado extends Model
         'lluvia' => 'decimal:2',
         'humedad' => 'decimal:2',
         'pertenece_empresa' => 'boolean',
+        'propietario' => 'boolean',
         'silo' => 'boolean',
         'latitud' => 'decimal:7',
         'longitud' => 'decimal:7',
@@ -52,9 +55,33 @@ class LoteEstado extends Model
         return $this->belongsTo(EstadoCultivo::class, 'estado_cultivo_id');
     }
 
+    /** Cultivo del movimiento (puede diferir del cultivo asignado al lote). */
+    public function cultivo()
+    {
+        return $this->belongsTo(Cultivo::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Registros que puede ver el usuario: el admin ve todos, el resto solo los propios.
+     */
+    public function scopeVisiblesPara($query, ?User $user)
+    {
+        if ($user && $user->hasRole('admin')) {
+            return $query;
+        }
+
+        return $query->where('user_id', $user?->id);
+    }
+
+    /** Indica si el usuario puede ver/editar este registro. */
+    public function esEditablePor(?User $user): bool
+    {
+        return $user && ($user->hasRole('admin') || (int) $this->user_id === (int) $user->id);
     }
 
     public function getGoogleMapsUrlAttribute(): ?string

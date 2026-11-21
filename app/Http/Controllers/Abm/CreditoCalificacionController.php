@@ -13,7 +13,7 @@ class CreditoCalificacionController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:admin');
+        // Acceso: rol Comercial (permiso ver_comercial), definido en routes/web.php
     }
 
     private function rules(): array

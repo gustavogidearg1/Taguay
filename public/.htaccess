@@ -24,6 +24,45 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
+# Tipos MIME explícitos: el hosting servía todos los archivos estáticos como text/html
+# y Chrome descarta las hojas de estilo que no llegan como text/css.
+# ForceType dentro de FilesMatch pisa cualquier configuración heredada de carpetas superiores.
+<IfModule mime_module>
+    <FilesMatch "\.css$">
+        ForceType text/css
+    </FilesMatch>
+    <FilesMatch "\.m?js$">
+        ForceType application/javascript
+    </FilesMatch>
+    <FilesMatch "\.json$">
+        ForceType application/json
+    </FilesMatch>
+    <FilesMatch "\.svg$">
+        ForceType image/svg+xml
+    </FilesMatch>
+    <FilesMatch "\.png$">
+        ForceType image/png
+    </FilesMatch>
+    <FilesMatch "\.jpe?g$">
+        ForceType image/jpeg
+    </FilesMatch>
+    <FilesMatch "\.webp$">
+        ForceType image/webp
+    </FilesMatch>
+    <FilesMatch "\.ico$">
+        ForceType image/x-icon
+    </FilesMatch>
+    <FilesMatch "\.woff2$">
+        ForceType font/woff2
+    </FilesMatch>
+    <FilesMatch "\.woff$">
+        ForceType font/woff
+    </FilesMatch>
+    <FilesMatch "\.pdf$">
+        ForceType application/pdf
+    </FilesMatch>
+</IfModule>
+
 # php -- BEGIN cPanel-generated handler, do not edit
 # Set the “ea-php83” package as the default “PHP” programming language.
 <IfModule mime_module>

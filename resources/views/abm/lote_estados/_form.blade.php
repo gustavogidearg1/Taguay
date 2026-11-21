@@ -84,8 +84,27 @@
         @enderror
     </div>
 
+    {{-- CULTIVO (solo Filtro Power BI = Sí; al editar se incluye el ya guardado) --}}
+    <div class="col-12 col-md-4">
+        <label class="form-label">Cultivo <span class="text-danger">*</span></label>
+        <select name="cultivo_id"
+                class="form-select @error('cultivo_id') is-invalid @enderror"
+                required>
+            <option value="">Seleccionar...</option>
+            @foreach($cultivos as $cultivo)
+                <option value="{{ $cultivo->id }}"
+                    {{ (string) old('cultivo_id', $registro->cultivo_id ?? '') === (string) $cultivo->id ? 'selected' : '' }}>
+                    {{ $cultivo->name }}
+                </option>
+            @endforeach
+        </select>
+        @error('cultivo_id')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+
     {{-- OBSERVACION --}}
-    <div class="col-12 col-md-8">
+    <div class="col-12 col-md-4">
         <label class="form-label">Observacion</label>
         <textarea name="observacion"
                   rows="2"
@@ -244,6 +263,19 @@
         @error('humedad')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
+    </div>
+
+    {{-- PROPIETARIO: tildado = propio (Taguay); destildado = de socio. Nuevo registro: tildado --}}
+    <div class="col-12 col-md-2 d-flex align-items-end">
+        <div class="form-check mb-2">
+            <input type="checkbox"
+                   name="propietario"
+                   value="1"
+                   class="form-check-input"
+                   id="propietario"
+                   {{ old('propietario', $registro->propietario ?? true) ? 'checked' : '' }}>
+            <label class="form-check-label" for="propietario">Propietario</label>
+        </div>
     </div>
 
     <div class="col-12 col-md-2 d-flex align-items-end">

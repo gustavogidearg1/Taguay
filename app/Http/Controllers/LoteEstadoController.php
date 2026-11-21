@@ -7,6 +7,7 @@ use App\Models\LoteEstado;
 use App\Models\EstadoCultivo;
 use App\Models\Establecimiento;
 use App\Models\Campania;
+use App\Models\Cultivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -24,7 +25,9 @@ class LoteEstadoController extends Controller
         $fechaHasta = $request->get('fecha_hasta');
         $buscar = trim((string) $request->get('buscar'));
 
-        $registros = LoteEstado::with(['lote.establecimiento', 'lote.campania', 'lote.cultivo', 'estadoCultivo', 'user'])
+        $registros = LoteEstado::with(['lote.establecimiento', 'lote.campania', 'lote.cultivo', 'cultivo', 'estadoCultivo', 'user'])
+            // El admin ve todos los movimientos; el resto, solo los propios
+            ->visiblesPara(Auth::user())
             ->when($loteId, fn($q) => $q->where('lote_id', $loteId))
             ->when($estadoId, fn($q) => $q->where('estado_cultivo_id', $estadoId))
             ->when($establecimientoId, function ($q) use ($establecimientoId) {
@@ -86,7 +89,9 @@ class LoteEstadoController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return view('abm.lote_estados.create', compact('lotes', 'estados', 'establecimientos'));
+        $cultivos = $this->cultivosParaSeleccion();
+
+        return view('abm.lote_estados.create', compact('lotes', 'estados', 'establecimientos', 'cultivos'));
     }
 
     public function store(Request $request)
@@ -102,7 +107,9 @@ class LoteEstadoController extends Controller
 
     public function show(LoteEstado $lote_estado)
     {
-        $lote_estado->load(['lote.establecimiento', 'lote.campania', 'lote.cultivo', 'estadoCultivo', 'user']);
+        $this->autorizarRegistro($lote_estado);
+
+        $lote_estado->load(['lote.establecimiento', 'lote.campania', 'lote.cultivo', 'cultivo', 'estadoCultivo', 'user']);
 
         return view('abm.lote_estados.show', [
             'registro' => $lote_estado
@@ -111,6 +118,8 @@ class LoteEstadoController extends Controller
 
     public function edit(LoteEstado $lote_estado)
     {
+        $this->autorizarRegistro($lote_estado);
+
         $lotes = Lote::with(['establecimiento', 'campania', 'cultivo'])
             ->orderBy('nombre')
             ->get();
@@ -126,11 +135,14 @@ class LoteEstadoController extends Controller
             'lotes' => $lotes,
             'estados' => $estados,
             'establecimientos' => $establecimientos,
+            'cultivos' => $this->cultivosParaSeleccion($lote_estado->cultivo_id),
         ]);
     }
 
     public function update(Request $request, LoteEstado $lote_estado)
     {
+        $this->autorizarRegistro($lote_estado);
+
         $data = $this->validateAndPrepareData($request, $lote_estado);
 
         $lote_estado->update($data);
@@ -142,6 +154,9 @@ class LoteEstadoController extends Controller
 
     public function destroy(LoteEstado $lote_estado)
     {
+        // Eliminar queda reservado al administrador
+        abort_unless(Auth::user()->hasRole('admin'), 403, 'Solo el administrador puede eliminar registros.');
+
         if ($lote_estado->imagen_1) {
             Storage::disk('public')->delete($lote_estado->imagen_1);
         }
@@ -179,8 +194,10 @@ class LoteEstadoController extends Controller
         // Estado preseleccionado: el marcado como "por defecto" en el ABM de Estados de Cultivo.
         $estadoDefaultId = old('estado_cultivo_id', $estados->firstWhere('por_defecto', true)?->id);
 
+        $cultivos = $this->cultivosParaSeleccion();
+
         return view('abm.lote_estados.quick_create', compact(
-            'lotes', 'estados', 'establecimientos', 'campanias', 'campaniaDefaultId', 'estadoDefaultId'
+            'lotes', 'estados', 'establecimientos', 'campanias', 'campaniaDefaultId', 'estadoDefaultId', 'cultivos'
         ));
     }
 
@@ -201,6 +218,7 @@ return redirect()
             'establecimiento_id' => ['required', 'exists:establecimientos,id'],
             'lote_id' => ['required', 'exists:lotes,id'],
             'estado_cultivo_id' => ['required', 'exists:estados_cultivo,id'],
+            'cultivo_id' => ['required', 'exists:cultivos,id'],
             'fecha' => ['required', 'date'],
             'observacion' => ['nullable', 'string'],
 
@@ -214,6 +232,7 @@ return redirect()
             'chasis' => ['nullable', 'string', 'max:100'],
             'chofer' => ['nullable', 'string', 'max:150'],
             'pertenece_empresa' => ['nullable', 'boolean'],
+            'propietario' => ['nullable', 'boolean'],
 
             'lluvia' => ['nullable', 'numeric', 'min:0'],
             'humedad' => ['nullable', 'numeric', 'min:0', 'max:100'],
@@ -224,6 +243,9 @@ return redirect()
             'latitud' => ['nullable', 'numeric', 'between:-90,90'],
             'longitud' => ['nullable', 'numeric', 'between:-180,180'],
             'link_google_maps' => ['nullable', 'url', 'max:500'],
+        ], [
+            'cultivo_id.required' => 'Elegí el cultivo.',
+            'cultivo_id.exists'   => 'El cultivo elegido no existe.',
         ]);
 
         $lote = Lote::findOrFail($data['lote_id']);
@@ -234,8 +256,14 @@ return redirect()
 
         unset($data['establecimiento_id']);
 
-        $data['user_id'] = Auth::id();
+        // El usuario que cargó el registro se guarda solo al crearlo:
+        // si el admin lo edita después, el registro sigue siendo de quien lo cargó.
+        if (! $loteEstado) {
+            $data['user_id'] = Auth::id();
+        }
         $data['pertenece_empresa'] = $request->boolean('pertenece_empresa');
+        // Tildado = propio (Taguay); destildado = de socio
+        $data['propietario'] = $request->boolean('propietario');
         $data['silo'] = $request->boolean('silo');
 
         if (!empty($data['latitud']) && !empty($data['longitud']) && empty($data['link_google_maps'])) {
@@ -303,5 +331,24 @@ if ($request->hasFile('imagen_2')) {
 }
 
         return $data;
+    }
+
+    /**
+     * Cultivos para la lista desplegable: solo los marcados "Filtro Power BI = Sí" en el ABM de Cultivos.
+     * Al editar se incluye también el cultivo ya guardado, aunque después se haya desmarcado.
+     */
+    private function cultivosParaSeleccion(?int $incluirId = null)
+    {
+        return Cultivo::query()
+            ->where('filtro_power_bi', true)
+            ->when($incluirId, fn ($q) => $q->orWhere('id', $incluirId))
+            ->orderBy('name')
+            ->get();
+    }
+
+    /** Un usuario no admin solo puede ver/editar sus propios registros. */
+    private function autorizarRegistro(LoteEstado $loteEstado): void
+    {
+        abort_unless($loteEstado->esEditablePor(Auth::user()), 403, 'Solo podés ver o editar tus propios registros.');
     }
 }

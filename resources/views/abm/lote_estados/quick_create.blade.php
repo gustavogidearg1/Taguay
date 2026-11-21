@@ -69,6 +69,26 @@
                             @enderror
                         </div>
 
+                        {{-- Cultivo: solo los marcados "Filtro Power BI = Sí" en ABM -> Cultivos.
+                             Al elegir un lote se completa con el cultivo del lote (si no se eligió otro). --}}
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Cultivo <span class="text-danger">*</span></label>
+                            <select id="cultivo_id" name="cultivo_id"
+                                class="form-select form-select-lg @error('cultivo_id') is-invalid @enderror"
+                                required>
+                                <option value="">Seleccionar...</option>
+                                @foreach ($cultivos as $cultivo)
+                                    <option value="{{ $cultivo->id }}"
+                                        {{ (string) old('cultivo_id') === (string) $cultivo->id ? 'selected' : '' }}>
+                                        {{ $cultivo->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('cultivo_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label fw-semibold">Establecimiento <span class="text-danger">*</span></label>
                             <select id="establecimiento_id" name="establecimiento_id"
@@ -97,6 +117,7 @@
                                         <option value="{{ $lote->id }}"
                                             data-establecimiento="{{ $lote->establecimiento_id }}"
                                             data-campania="{{ $lote->campania_id }}"
+                                            data-cultivo="{{ $lote->cultivo_id }}"
                                             {{ old('lote_id') == $lote->id ? 'selected' : '' }}>
                                             {{ $lote->nombre }} - {{ $lote->campania->name ?? '-' }}
                                         </option>
@@ -219,7 +240,20 @@
                                             value="{{ old('numero') }}">
                                     </div>
 
-                                    <div class="col-6">
+                                    {{-- Propietario: tildado = propio (Taguay); destildado = de socio --}}
+                                    <div class="col-4">
+                                        <div class="form-check pt-2">
+                                            <input type="hidden" name="propietario" value="0">
+                                            <input class="form-check-input" type="checkbox" name="propietario"
+                                                value="1" id="propietario"
+                                                {{ old('propietario', '1') == '1' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="propietario">
+                                                <strong>Propietario</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-4">
                                         <div class="form-check pt-2">
                                             <input type="hidden" name="pertenece_empresa" value="0">
                                             <input class="form-check-input" type="checkbox" name="pertenece_empresa"
@@ -231,7 +265,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <div class="form-check pt-2">
                                             <input class="form-check-input" type="checkbox" name="silo"
                                                 value="1" id="silo" {{ old('silo') ? 'checked' : '' }}>
@@ -239,6 +273,10 @@
                                                 <strong>Silo</strong>
                                             </label>
                                         </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="form-text mt-0">Si destildás <strong>Propietario</strong>, se registra como de <strong>socio</strong>.</div>
                                     </div>
                                 </div>
                             </div>
@@ -649,6 +687,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // =========================
     // RINDE
     // =========================
+    // Al elegir un lote, sugerimos su cultivo si el usuario todavía no eligió uno.
+    // Solo se completa si ese cultivo está en la lista (Filtro Power BI = Sí).
+    const cultivoSelect = document.getElementById('cultivo_id');
+    loteSelect?.addEventListener('change', function() {
+        const opcion = loteSelect.selectedOptions[0];
+        const cultivoLote = opcion ? opcion.dataset.cultivo : '';
+        if (!cultivoSelect || cultivoSelect.value || !cultivoLote) return;
+        if (cultivoSelect.querySelector(`option[value="${cultivoLote}"]`)) {
+            cultivoSelect.value = cultivoLote;
+        }
+    });
+
     function calcularRinde() {
         if (!produccionInput || !superficieInput || !rindeInput) return;
 

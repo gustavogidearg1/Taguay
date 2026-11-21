@@ -1,95 +1,66 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-  <div class="card">
-    <div class="card-header">Crear Nuevo Usuario</div>
+<div class="container py-3">
+  <div class="card mat-card">
+    <div class="card-header header-mint py-3">
+      <h3 class="mat-title mb-0"><i class="fa-solid fa-user-plus me-2"></i> Crear Nuevo Usuario</h3>
+    </div>
+
     <div class="card-body">
-      <form method="POST" action="{{ route('users.store') }}">
+      <form method="POST" action="{{ route('users.store') }}" autocomplete="off">
         @csrf
 
-        <div class="mb-3">
-          <label class="form-label">Nombre</label>
-          <input type="text"
-                 class="form-control @error('name') is-invalid @enderror"
-                 name="name"
-                 value="{{ old('name') }}"
-                 required>
-          @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Email</label>
-          <input type="email"
-                 class="form-control @error('email') is-invalid @enderror"
-                 name="email"
-                 value="{{ old('email') }}"
-                 required>
-          @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Contraseña</label>
-          <input type="password"
-                 class="form-control @error('password') is-invalid @enderror"
-                 name="password"
-                 required>
-          @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Confirmar Contraseña</label>
-          <input type="password" class="form-control" name="password_confirmation" required>
-        </div>
-
-        {{-- ROL BASE (1) --}}
-        <div class="mb-3">
-          <label class="form-label">Rol (base)</label>
-          <select class="form-select @error('roles') is-invalid @enderror" name="roles[]">
-            @php
-              $selectedRole = old('roles.0', 'cliente');
-            @endphp
-            @foreach($roles as $role)
-              <option value="{{ $role->name }}" @selected($selectedRole === $role->name)>
-                {{ $role->name }}
-              </option>
-            @endforeach
-          </select>
-          @error('roles') <div class="invalid-feedback">{{ $message }}</div> @enderror
-        </div>
-
-        {{-- PERMISOS / ÁREAS --}}
-        <div class="mb-3">
-          <label class="form-label">Áreas habilitadas</label>
-          @php
-            $selectedPerms = old('permissions', []);
-            $labels = [
-              'ver_agricola'  => 'Agrícola',
-              'ver_ganadero'  => 'Ganadero',
-              'ver_comercial' => 'Comercial',
-            ];
-          @endphp
-
-          <div class="d-flex flex-wrap gap-3">
-            @foreach($perms as $perm)
-              <div class="form-check">
-                <input class="form-check-input"
-                       type="checkbox"
-                       name="permissions[]"
-                       id="perm_{{ $perm->name }}"
-                       value="{{ $perm->name }}"
-                       @checked(in_array($perm->name, $selectedPerms))>
-                <label class="form-check-label" for="perm_{{ $perm->name }}">
-                  {{ $labels[$perm->name] ?? $perm->name }}
-                </label>
-              </div>
-            @endforeach
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold">Nombre</label>
+            <input type="text"
+                   class="form-control @error('name') is-invalid @enderror"
+                   name="name"
+                   value="{{ old('name') }}"
+                   required>
+            @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
           </div>
 
-          @error('permissions') <div class="text-danger small">{{ $message }}</div> @enderror
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold">Email</label>
+            <input type="email"
+                   class="form-control @error('email') is-invalid @enderror"
+                   name="email"
+                   value="{{ old('email') }}"
+                   autocomplete="off"
+                   required>
+            @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold">Contraseña</label>
+            <input type="password"
+                   class="form-control @error('password') is-invalid @enderror"
+                   name="password"
+                   autocomplete="new-password"
+                   required>
+            @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold">Confirmar contraseña</label>
+            <input type="password" class="form-control" name="password_confirmation"
+                   autocomplete="new-password" required>
+          </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Guardar</button>
+        @include('users._accesos', [
+          'selectedRoles'    => old('roles', []),
+          'selectedReportes' => old('reportes', []),
+        ])
+
+        <div class="d-flex justify-content-end gap-2">
+          <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-success">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Guardar
+          </button>
+        </div>
       </form>
     </div>
   </div>
