@@ -221,9 +221,10 @@
 
                                     <div class="col-6">
                                         <div class="form-check pt-2">
+                                            <input type="hidden" name="pertenece_empresa" value="0">
                                             <input class="form-check-input" type="checkbox" name="pertenece_empresa"
                                                 value="1" id="pertenece_empresa"
-                                                {{ old('pertenece_empresa') ? 'checked' : '' }}>
+                                                {{ old('pertenece_empresa', '1') == '1' ? 'checked' : '' }}>
                                             <label class="form-check-label" for="pertenece_empresa">
                                                 <strong>Empresa</strong>
                                             </label>
