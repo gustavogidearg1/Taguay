@@ -176,8 +176,11 @@ class LoteEstadoController extends Controller
         // Por defecto se preselecciona la campaña activa más reciente (hoy: 26/27).
         $campaniaDefaultId = old('campania_id', $campanias->first()->id ?? null);
 
+        // Estado preseleccionado: el marcado como "por defecto" en el ABM de Estados de Cultivo.
+        $estadoDefaultId = old('estado_cultivo_id', $estados->firstWhere('por_defecto', true)?->id);
+
         return view('abm.lote_estados.quick_create', compact(
-            'lotes', 'estados', 'establecimientos', 'campanias', 'campaniaDefaultId'
+            'lotes', 'estados', 'establecimientos', 'campanias', 'campaniaDefaultId', 'estadoDefaultId'
         ));
     }
 

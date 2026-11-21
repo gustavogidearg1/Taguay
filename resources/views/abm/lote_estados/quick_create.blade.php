@@ -125,7 +125,7 @@
                                 <option value="">Seleccionar...</option>
                                 @foreach ($estados as $estado)
                                     <option value="{{ $estado->id }}"
-                                        {{ old('estado_cultivo_id') == $estado->id ? 'selected' : '' }}>
+                                        {{ (string) $estadoDefaultId === (string) $estado->id ? 'selected' : '' }}>
                                         {{ $estado->nombre }}
                                     </option>
                                 @endforeach

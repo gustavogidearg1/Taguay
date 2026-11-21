@@ -34,6 +34,14 @@
                             </label>
                         </div>
 
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="por_defecto" id="por_defecto" value="1" {{ old('por_defecto') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="por_defecto">
+                                Por defecto en Carga Rápida
+                            </label>
+                            <div class="form-text">Solo puede haber uno. Al marcarlo se desmarca el anterior.</div>
+                        </div>
+
                         <div class="d-flex justify-content-end">
                             <button class="btn btn-primary btn-mat">
                                 <i class="fa-solid fa-floppy-disk me-1"></i> Guardar
@@ -65,6 +73,7 @@
                                 <tr>
                                     <th>Nombre</th>
                                     <th>Activo</th>
+                                    <th>Por defecto</th>
                                     <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
@@ -77,6 +86,13 @@
                                                 <span class="badge bg-success">Sí</span>
                                             @else
                                                 <span class="badge bg-secondary">No</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($estado->por_defecto)
+                                                <span class="badge bg-primary"><i class="fa-solid fa-star me-1"></i> Por defecto</span>
+                                            @else
+                                                <span class="text-muted">—</span>
                                             @endif
                                         </td>
                                         <td class="text-end">
@@ -123,6 +139,13 @@
                                                                 Activo
                                                             </label>
                                                         </div>
+
+                                                        <div class="form-check mt-2">
+                                                            <input class="form-check-input" type="checkbox" name="por_defecto" id="por_defecto{{ $estado->id }}" value="1" {{ $estado->por_defecto ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="por_defecto{{ $estado->id }}">
+                                                                Por defecto en Carga Rápida
+                                                            </label>
+                                                        </div>
                                                     </div>
 
                                                     <div class="modal-footer">
@@ -135,7 +158,7 @@
                                     </div>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted py-4">
+                                        <td colspan="4" class="text-center text-muted py-4">
                                             No hay estados cargados.
                                         </td>
                                     </tr>
