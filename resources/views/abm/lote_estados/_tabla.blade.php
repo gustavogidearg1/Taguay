@@ -9,6 +9,7 @@
                             <th>Establecimiento</th>
                             <th>Campaña</th>
                             <th>Cultivo</th>
+                            <th class="text-end">Cantidad (kg)</th>
                             <th>Propiedad</th>
                             <th>Estado</th>
                             <th>Usuario</th>
@@ -23,6 +24,7 @@
                                 <td>{{ $item->lote->establecimiento->nombre ?? '-' }}</td>
                                 <td>{{ $item->lote->campania->name ?? '-' }}</td>
                                 <td>{{ $item->cultivo->name ?? $item->lote->cultivo->name ?? '-' }}</td>
+                                <td class="text-end text-nowrap">{{ $item->cantidad_formateada }}</td>
                                 <td>
                                     <span class="badge {{ $item->propietario ? 'bg-success' : 'bg-secondary' }}">
                                         {{ $item->propietario ? 'Propio' : 'Socio' }}
@@ -53,14 +55,14 @@
                             @if($item->observacion)
                                 <tr>
                                     <td></td>
-                                    <td colspan="8" class="text-muted small">
+                                    <td colspan="9" class="text-muted small">
                                         <strong>Observación:</strong> {{ $item->observacion }}
                                     </td>
                                 </tr>
                             @endif
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center text-muted py-4">No hay registros cargados.</td>
+                                <td colspan="10" class="text-center text-muted py-4">No hay registros cargados.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -79,6 +81,7 @@
                                     <div><strong>Fecha:</strong> {{ optional($item->fecha)->format('d/m/Y') }}</div>
                                     <div><strong>Campaña:</strong> {{ $item->lote->campania->name ?? '-' }}</div>
                                     <div><strong>Cultivo:</strong> {{ $item->cultivo->name ?? $item->lote->cultivo->name ?? '-' }}</div>
+                                    <div><strong>Cantidad:</strong> {{ $item->cantidad_formateada }} kg</div>
                                     <div><strong>Propiedad:</strong> {{ $item->propietario ? 'Propio' : 'Socio' }}</div>
                                     <div><strong>Estado:</strong> {{ $item->estadoCultivo->nombre ?? '-' }}</div>
                                     <div><strong>Usuario:</strong> {{ $item->user->name ?? '-' }}</div>

@@ -44,7 +44,7 @@ Si un cultivo se desmarca después de haber sido usado, los registros que ya lo 
 Menú **Agrícola → Avance de Campo**.
 
 - El **Administrador** ve los registros de todos los usuarios. El resto ve **solo los suyos**.
-- Columnas: Fecha, Lote, Establecimiento, Campaña, Cultivo, **Propiedad** (*Propio* o *Socio*), Estado, Usuario y Acciones.
+- Columnas: Fecha, Lote, Establecimiento, Campaña, Cultivo, **Cantidad (kg)**, **Propiedad** (*Propio* o *Socio*), Estado, Usuario y Acciones.
 - Acciones:
   - **Ver** y **Editar:** sobre los registros propios. El Administrador, sobre todos.
   - **Eliminar:** solo el Administrador.
@@ -53,3 +53,15 @@ Menú **Agrícola → Avance de Campo**.
 ## 5. Registros anteriores a este cambio
 
 Los registros cargados antes de que existiera el campo **Cultivo** tomaron automáticamente el cultivo de su lote. Todos quedaron como **Propietario** (propio).
+
+## 6. Historial importado desde Excel
+
+Las cosechas registradas en planilla desde la campaña **24/25** (noviembre de 2024) se importaron al sistema, junto con sus lotes. Esos registros:
+
+- Figuran con estado **Cosecha** y a nombre del **Administrador**, por eso solo los ve el Administrador en el listado.
+- Tienen en **Chasis** la patente del camión y en **Número / CTG** el código interno de la planilla.
+- Si la carga fue a un **silo bolsa**, tienen tildado **Silo** y el nombre del silo en **Observación**.
+- El **Rinde** es el que figuraba en la planilla.
+
+Los cultivos usan los mismos nombres que la planilla: **Trigo_Pan**, **Maiz_T**, **Soja_1** (soja de primera) y **Soja_2** (soja de segunda), además de Maiz, Camelina y Girasol.
+

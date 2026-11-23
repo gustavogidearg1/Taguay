@@ -55,6 +55,22 @@ class LoteEstado extends Model
         return $this->belongsTo(EstadoCultivo::class, 'estado_cultivo_id');
     }
 
+    /**
+     * Cantidad en kg lista para mostrar: separador de miles y decimales solo si los tiene.
+     * Ej.: 11890.00 -> "11.890" ; 56.50 -> "56,50" ; null -> "-". Uso: $registro->cantidad_formateada
+     */
+    public function getCantidadFormateadaAttribute(): string
+    {
+        if ($this->cantidad === null) {
+            return '-';
+        }
+
+        $valor = (float) $this->cantidad;
+        $decimales = floor($valor) == $valor ? 0 : 2;
+
+        return number_format($valor, $decimales, ',', '.');
+    }
+
     /** Cultivo del movimiento (puede diferir del cultivo asignado al lote). */
     public function cultivo()
     {
