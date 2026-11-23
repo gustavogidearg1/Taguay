@@ -23,7 +23,9 @@ El **Avance de Campo** es la sección donde se registra, desde el celular y en e
 | **Lote** | Sí | Se puede elegir de la lista o con el botón **Buscar**. |
 | **Estado** | Sí | Viene elegido el estado marcado como *por defecto* en ABM → Agrícola → Estados de Cultivo. |
 | **Fecha** | Sí | Viene con la fecha de hoy. |
-| Producción (Tn), Superficie (Ha) | No | Si cargás las dos, el **Rinde** se calcula solo. |
+| **Cantidad (kg)** | No | Kilogramos de la carga, por ejemplo **27000** o **56**. Se escribe sin puntos de miles. |
+| Superficie (Ha) | No | Hectáreas. |
+| **Rinde (Tn/ha)** | No | Si cargás cantidad y superficie, se calcula solo: la cantidad se pasa a toneladas (÷ 1.000) y se divide por las hectáreas. Ejemplo: 15.020 kg → 15,02 Tn ÷ 15 ha = **1,00 Tn/ha**. Se puede corregir a mano. |
 | Lluvia, Humedad | No | |
 | Chasis, Chofer, Número / CTG | No | Datos del camión. |
 | **Propietario** | — | Viene **tildado**: el registro es propio (Taguay). Si lo destildás, se registra como de **socio**. |

@@ -98,9 +98,9 @@
 
                 <div class="col-12 col-md-4">
                     <div class="kv">
-                        <div class="k">Producción (Tn)</div>
+                        <div class="k">Cantidad (kg)</div>
                         <div class="v">
-                            {{ $registro->produccion_tn !== null ? number_format($registro->produccion_tn, 2, ',', '.') : '-' }}
+                            {{ $registro->cantidad !== null ? number_format($registro->cantidad, 2, ',', '.') : '-' }}
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,7 @@
 
                 <div class="col-12 col-md-4">
                     <div class="kv">
-                        <div class="k">Rinde</div>
+                        <div class="k">Rinde (Tn/ha)</div>
                         <div class="v">
                             {{ $registro->rinde !== null ? number_format($registro->rinde, 2, ',', '.') : '-' }}
                         </div>

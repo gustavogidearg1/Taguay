@@ -222,7 +222,7 @@ return redirect()
             'fecha' => ['required', 'date'],
             'observacion' => ['nullable', 'string'],
 
-            'produccion_tn' => ['nullable', 'numeric', 'min:0'],
+            'cantidad' => ['nullable', 'numeric', 'min:0', 'max:9999999999'],   // kilogramos
             'superficie_ha' => ['nullable', 'numeric', 'min:0'],
             'rinde' => ['nullable', 'numeric', 'min:0'],
 

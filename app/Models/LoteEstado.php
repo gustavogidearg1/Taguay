@@ -13,7 +13,7 @@ class LoteEstado extends Model
         'user_id',
         'fecha',
         'observacion',
-        'produccion_tn',
+        'cantidad',        // kilogramos
         'superficie_ha',
         'rinde',
         'imagen_1',
@@ -33,7 +33,7 @@ class LoteEstado extends Model
 
     protected $casts = [
         'fecha' => 'date',
-        'produccion_tn' => 'decimal:2',
+        'cantidad' => 'decimal:2',
         'superficie_ha' => 'decimal:2',
         'rinde' => 'decimal:2',
         'lluvia' => 'decimal:2',

@@ -167,11 +167,12 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Producción (Tn)</label>
-                            <input type="number" step="0.01" min="0" name="produccion_tn" id="produccion_tn"
-                                class="form-control form-control-lg @error('produccion_tn') is-invalid @enderror"
-                                value="{{ old('produccion_tn') }}">
-                            @error('produccion_tn')
+                            <label class="form-label fw-semibold">Cantidad (kg)</label>
+                            <input type="number" step="0.01" min="0" inputmode="decimal" name="cantidad" id="cantidad"
+                                placeholder="Ej.: 27000"
+                                class="form-control form-control-lg @error('cantidad') is-invalid @enderror"
+                                value="{{ old('cantidad') }}">
+                            @error('cantidad')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -187,14 +188,14 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Rinde</label>
+                            <label class="form-label fw-semibold">Rinde (Tn/ha)</label>
                             <input type="number" step="0.01" min="0" name="rinde" id="rinde"
                                 class="form-control form-control-lg @error('rinde') is-invalid @enderror"
                                 value="{{ old('rinde') }}" placeholder="Se puede calcular automáticamente">
                             @error('rinde')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">Si cargás producción y superficie, se calcula solo.</div>
+                            <div class="form-text">Si cargás cantidad y superficie, se calcula solo: (kg ÷ 1000) ÷ ha.</div>
                         </div>
 
                         <div class="col-6">
@@ -527,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const establecimientoSelect = document.getElementById('establecimiento_id');
     const loteSelect = document.getElementById('lote_id');
-    const produccionInput = document.getElementById('produccion_tn');
+    const produccionInput = document.getElementById('cantidad');   // kilogramos
     const superficieInput = document.getElementById('superficie_ha');
     const rindeInput = document.getElementById('rinde');
 
@@ -706,7 +707,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const superficie = parseFloat(superficieInput.value);
 
         if (!isNaN(produccion) && !isNaN(superficie) && superficie > 0) {
-            const valor = produccion / superficie;
+            // La cantidad está en kg y el rinde se expresa en Tn/ha:
+            // primero se pasa a toneladas (÷ 1000) y después se divide por la superficie.
+            const valor = (produccion / 1000) / superficie;
             rindeInput.value = valor.toFixed(2);
         }
     }
