@@ -1,4 +1,4 @@
-{{-- Tabla de Estados por Lote (escritorio + tarjetas en móvil). Se usa en lote_estados/index y en el Home.
+{{-- Tabla de Avance de Campo (escritorio + tarjetas en móvil). Se usa en lote_estados/index y en el Home.
      Variable: $registros (colección o paginador de LoteEstado). Eliminar solo lo ve el admin. --}}
             <div class="table-responsive d-none d-md-block">
                 <table class="table table-hover align-middle">

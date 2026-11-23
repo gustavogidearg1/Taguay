@@ -1,13 +1,17 @@
-# Carga Rápida y Estados por Lote
+# Avance de Campo
 
-La **Carga Rápida** sirve para registrar desde el celular, en el campo, cada movimiento de un lote: siembra, madurez, cosecha, camiones, etc. Todos los registros se consultan después en **Estados por Lote**.
+El **Avance de Campo** es la sección donde se registra, desde el celular y en el campo, cada movimiento de un lote: siembra, madurez, cosecha, camiones, etc.
+
+- **Cargar Avance** abre el formulario para registrar un movimiento nuevo.
+- **Avance de Campo** es el listado de todos los movimientos cargados.
 
 **Quién puede usarla:** usuarios con rol **Agrícola** y el **Administrador**.
 
-## 1. Cómo entrar
+## 1. Cómo cargar un avance
 
-- Botón verde **Carga Estado** del menú superior.
-- O desde el Home: botón negro **Estados por Lote → Carga Rápida**.
+- Botón verde **Cargar Avance** del menú superior.
+- Desde el Home: botón negro **Avance de Campo → Cargar Avance**.
+- Desde el listado **Avance de Campo**: botón **Cargar Avance**.
 
 ## 2. Campos del formulario
 
@@ -33,9 +37,9 @@ La lista de **Cultivo** muestra solo los cultivos marcados con **Filtro Power BI
 
 Si un cultivo se desmarca después de haber sido usado, los registros que ya lo tenían lo conservan. Al editarlos, sigue apareciendo en la lista.
 
-## 4. Estados por Lote (listado)
+## 4. Listado de Avance de Campo
 
-Menú **Agrícola → Estados por Lote**.
+Menú **Agrícola → Avance de Campo**.
 
 - El **Administrador** ve los registros de todos los usuarios. El resto ve **solo los suyos**.
 - Columnas: Fecha, Lote, Establecimiento, Campaña, Cultivo, **Propiedad** (*Propio* o *Socio*), Estado, Usuario y Acciones.

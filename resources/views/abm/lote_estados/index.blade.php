@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Estados por Lote')
+@section('title', 'Avance de Campo')
 
 @section('content')
 <div class="page-wrap">
@@ -8,7 +8,7 @@
         <div class="card-header header-mint py-3">
             <div class="mat-header">
                 <h3 class="mat-title">
-                    <i class="fa-solid fa-list-check me-2"></i> Estados por Lote
+                    <i class="fa-solid fa-list-check me-2"></i> Avance de Campo
                 </h3>
 
                <div class="ms-auto d-flex align-items-center gap-2">
@@ -17,7 +17,7 @@
         <a href="{{ route('lote-estados.quick-create') }}"
            class="btn btn-success btn-mat d-flex align-items-center">
             <i class="fa-solid fa-mobile-screen-button me-1"></i>
-            Carga Movil
+            Cargar Avance
         </a>
     @endcan
 

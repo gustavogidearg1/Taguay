@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detalle Estado por Lote')
+@section('title', 'Detalle del Avance de Campo')
 
 @section('content')
 <div class="page-wrap">
@@ -13,7 +13,7 @@
                     <span class="d-print-none">
                         <i class="fa-solid fa-list-check me-2"></i>
                     </span>
-                    Detalle estado por lote
+                    Detalle del avance de campo
                 </h3>
 
                 <div class="ms-auto d-flex gap-2 no-print">

@@ -166,7 +166,7 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('lotes', LoteController::class);
 });
 
-// Estados por Lote y Carga Rápida: rol Agrícola (o admin).
+// Avance de Campo (listado y carga): rol Agrícola (o admin).
 // Un no-admin solo ve/edita sus propios registros (ver LoteEstadoController).
 Route::middleware(['auth','permission:ver_agricola'])->group(function () {
     Route::get('lote-estados/carga-rapida', [LoteEstadoController::class, 'quickCreate'])

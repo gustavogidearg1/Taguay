@@ -28,7 +28,7 @@ class Permisos
     /** Descripción corta de cada rol, para mostrar en el formulario. */
     public const ROLES_DESCRIPCION = [
         'admin'     => 'Ve y administra todo, incluidos los usuarios y los ABM.',
-        'agricola'  => 'Carga Rápida, Estados por Lote (solo sus registros) y Lluvias.',
+        'agricola'  => 'Avance de Campo: carga, ve y edita solo sus registros. También Lluvias.',
         'ganadero'  => 'Menú Ganadería (Haciendas).',
         'comercial' => 'Menú Comerciales (Contratos, Compras, Calificación Créditos).',
     ];

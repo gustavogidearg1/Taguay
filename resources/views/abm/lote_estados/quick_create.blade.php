@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Carga rápida de campo')
+@section('title', 'Cargar Avance de Campo')
 
 @php
     // Datos para el buscador de Lote (sin API, filtra en el navegador)
@@ -22,7 +22,7 @@
             <div class="card-header header-mint py-3">
                 <div class="mat-header">
                     <h3 class="mat-title">
-                        <i class="fa-solid fa-mobile-screen-button me-2"></i> Carga rápida de campo
+                        <i class="fa-solid fa-mobile-screen-button me-2"></i> Cargar Avance de Campo
                     </h3>
 
                     <div class="ms-auto d-flex gap-2">

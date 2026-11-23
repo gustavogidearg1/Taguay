@@ -102,7 +102,7 @@ class LoteEstadoController extends Controller
 
         return redirect()
             ->route('lote-estados.index')
-            ->with('success', 'Estado del lote registrado correctamente.');
+            ->with('success', 'Avance de campo registrado correctamente.');
     }
 
     public function show(LoteEstado $lote_estado)
@@ -149,7 +149,7 @@ class LoteEstadoController extends Controller
 
         return redirect()
             ->route('lote-estados.index')
-            ->with('success', 'Estado del lote actualizado correctamente.');
+            ->with('success', 'Avance de campo actualizado correctamente.');
     }
 
     public function destroy(LoteEstado $lote_estado)
@@ -169,7 +169,7 @@ class LoteEstadoController extends Controller
 
         return redirect()
             ->route('lote-estados.index')
-            ->with('success', 'Estado del lote eliminado correctamente.');
+            ->with('success', 'Avance de campo eliminado correctamente.');
     }
 
     public function quickCreate()
@@ -209,7 +209,7 @@ class LoteEstadoController extends Controller
 
 return redirect()
     ->route('lote-estados.index')
-    ->with('success', 'Carga rápida guardada correctamente.');
+    ->with('success', 'Avance de campo guardado correctamente.');
     }
 
     private function validateAndPrepareData(Request $request, ?LoteEstado $loteEstado = null): array

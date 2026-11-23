@@ -15,7 +15,7 @@ class HomeController extends Controller
 
     /**
      * Pantalla de inicio: tarjetas de reportes según permisos y,
-     * para usuarios Agrícolas, la tabla de últimos Estados por Lote.
+     * para usuarios Agrícolas, la tabla de últimos movimientos de Avance de Campo.
      */
     public function index()
     {
@@ -24,7 +24,7 @@ class HomeController extends Controller
         // ¿Ve al menos una tarjeta de reporte?
         $tieneReportes = $user->canAny(array_keys(Permisos::REPORTES));
 
-        // Últimos movimientos de Estados por Lote (admin: todos; resto: solo los propios)
+        // Últimos movimientos de Avance de Campo (admin: todos; resto: solo los propios)
         $registros = collect();
         if ($user->can('ver_agricola')) {
             $registros = LoteEstado::with(['lote.establecimiento', 'lote.campania', 'lote.cultivo', 'cultivo', 'estadoCultivo', 'user'])

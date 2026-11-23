@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Editar Estado por Lote')
+@section('title', 'Editar Avance de Campo')
 
 @section('content')
 <div class="page-wrap">
@@ -8,7 +8,7 @@
         <div class="card-header header-mint py-3">
             <div class="mat-header">
                 <h3 class="mat-title">
-                    <i class="fa-solid fa-pen me-2"></i> Editar estado por lote
+                    <i class="fa-solid fa-pen me-2"></i> Editar avance de campo
                 </h3>
             </div>
         </div>

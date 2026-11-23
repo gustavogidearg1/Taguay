@@ -17,8 +17,8 @@ Así, una persona de campo puede cargar estados de lotes sin ver información ec
 
 | Rol | Qué puede hacer |
 |---|---|
-| **Administrador** | Ve y administra todo: usuarios, ABM (establecimientos, cultivos, campañas, lotes, estados de cultivo, rindes), importación de facturas, todos los reportes y todos los registros de todos los usuarios. Es el único que puede **eliminar** registros de Estados por Lote. |
-| **Agrícola** | Usa la **Carga Rápida** (botón *Carga Estado*) y **Estados por Lote**: carga, ve y edita **solo sus propios registros**. También accede a **Lluvias**. |
+| **Administrador** | Ve y administra todo: usuarios, ABM (establecimientos, cultivos, campañas, lotes, estados de cultivo, rindes), importación de facturas, todos los reportes y todos los registros de todos los usuarios. Es el único que puede **eliminar** registros de Avance de Campo. |
+| **Agrícola** | Usa el **Avance de Campo**: carga (botón *Cargar Avance*), ve y edita **solo sus propios registros**. También accede a **Lluvias**. |
 | **Ganadero** | Accede al menú **Ganadería** (Haciendas). |
 | **Comercial** | Accede al menú **Comerciales**: Contratos, Compras y Calificación de Créditos. |
 
@@ -37,11 +37,11 @@ El **Administrador ve todos los reportes** aunque no estén tildados.
 ## 4. La pantalla de inicio (Home)
 
 - Arriba aparecen las **tarjetas de los reportes** que el usuario tiene habilitados.
-- Si el usuario tiene el rol **Agrícola**, debajo aparece un botón negro **"Estados por Lote"**. Al tocarlo se abre una tabla con los últimos 10 movimientos:
+- Si el usuario tiene el rol **Agrícola**, debajo aparece un botón negro **"Avance de Campo"**. Al tocarlo se abre una tabla con los últimos 10 movimientos:
   - El administrador ve los movimientos de todos.
   - El resto ve **solo sus propios movimientos**.
 - Esa tabla aparece **abierta** cuando el usuario no tiene ningún reporte (por ejemplo, alguien de campo que solo carga datos). Si tiene al menos un reporte, aparece **cerrada** y se abre con el botón.
-- Desde ahí hay accesos directos a **Carga Rápida** y a **Ver todos**.
+- Desde ahí hay accesos directos a **Cargar Avance** y a **Ver todos**.
 
 ## 5. Cómo crear o editar un usuario
 

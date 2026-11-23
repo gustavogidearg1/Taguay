@@ -172,7 +172,7 @@
                     href="{{ route('lote-estados.quick-create') }}"
                     style="background:#dff3e3; border-radius:10px; padding:6px 12px;">
                     <i class="fa-solid fa-mobile-screen-button me-2"></i>
-                    Carga Estado
+                    Cargar Avance
                 </a>
             </li>
         @endcan
@@ -205,7 +205,7 @@
                                             </a>
 
                                             <a class="dropdown-item" href="{{ route('lote-estados.index') }}">
-                                                <i class="fa-solid fa-list-check me-2"></i> Estados por Lote
+                                                <i class="fa-solid fa-list-check me-2"></i> Avance de Campo
                                             </a>
 
                                             {{-- Lotes, Estados de Cultivo y Rindes se movieron a ABM -> Agrícola (solo admin) --}}

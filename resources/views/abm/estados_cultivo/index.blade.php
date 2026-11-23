@@ -37,7 +37,7 @@
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" name="por_defecto" id="por_defecto" value="1" {{ old('por_defecto') ? 'checked' : '' }}>
                             <label class="form-check-label" for="por_defecto">
-                                Por defecto en Carga Rápida
+                                Por defecto al cargar avance
                             </label>
                             <div class="form-text">Solo puede haber uno. Al marcarlo se desmarca el anterior.</div>
                         </div>
@@ -143,7 +143,7 @@
                                                         <div class="form-check mt-2">
                                                             <input class="form-check-input" type="checkbox" name="por_defecto" id="por_defecto{{ $estado->id }}" value="1" {{ $estado->por_defecto ? 'checked' : '' }}>
                                                             <label class="form-check-label" for="por_defecto{{ $estado->id }}">
-                                                                Por defecto en Carga Rápida
+                                                                Por defecto al cargar avance
                                                             </label>
                                                         </div>
                                                     </div>

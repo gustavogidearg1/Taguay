@@ -78,7 +78,7 @@ class EstadoCultivoController extends Controller
 
     /**
      * Convierte los checkboxes en booleanos.
-     * Un estado por defecto siempre debe estar activo (si no, no aparecería en la Carga Rápida).
+     * Un estado por defecto siempre debe estar activo (si no, no aparecería al cargar avance).
      */
     private function normalizarFlags(Request $request, array $data): array
     {

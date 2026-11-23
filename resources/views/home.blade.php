@@ -278,7 +278,7 @@
                                 </a>
 
                                 <div class="module-footer-note">
-                                    Rentabilidad y desempe&ntilde;o de tus cultivos.
+                                    Rentabilidad y desempe&ntilde;o.
                                 </div>
                             </div>
                         </div>
@@ -387,14 +387,14 @@
                     </div>
                 @endif
 
-                {{-- Estados por Lote: rol Agrícola. Abierto por defecto si no hay tarjetas de reportes --}}
+                {{-- Avance de Campo (últimos movimientos): rol Agrícola. Abierto por defecto si no hay tarjetas de reportes --}}
                 @can('ver_agricola')
                     <div class="mt-4">
                         <button type="button"
                             class="btn btn-dark w-100 d-flex justify-content-between align-items-center py-2 px-3 btn-estados-lote"
                             data-bs-toggle="collapse" data-bs-target="#homeEstadosLote"
                             aria-expanded="{{ $tablaAbierta ? 'true' : 'false' }}" aria-controls="homeEstadosLote">
-                            <span><i class="fa-solid fa-list-check me-2"></i> Estados por Lote
+                            <span><i class="fa-solid fa-list-check me-2"></i> Avance de Campo
                                 <small class="opacity-75 ms-1">
                                     ({{ auth()->user()->hasRole('admin') ? 'últimos movimientos' : 'mis últimos movimientos' }})
                                 </small>
@@ -407,7 +407,7 @@
                                 <div class="card-body">
                                     <div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
                                         <a href="{{ route('lote-estados.quick-create') }}" class="btn btn-success btn-sm">
-                                            <i class="fa-solid fa-mobile-screen-button me-1"></i> Carga Rápida
+                                            <i class="fa-solid fa-mobile-screen-button me-1"></i> Cargar Avance
                                         </a>
                                         <a href="{{ route('lote-estados.index') }}" class="btn btn-outline-primary btn-sm">
                                             Ver todos <span aria-hidden="true">&rarr;</span>
