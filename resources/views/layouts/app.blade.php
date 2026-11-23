@@ -16,8 +16,8 @@
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
-    {{-- Favicon --}}
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    {{-- Favicon, manifest y botón de instalación de "App Taguay" --}}
+    @include('layouts.pwa-taguay')
 
     {{-- Bootstrap CSS compilado con los colores de marca (ver CLAUDE.md) --}}
     @vite(['resources/sass/app.scss'])

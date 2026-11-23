@@ -227,6 +227,62 @@ body{
         object-fit: contain;
     }
 
+    /* App instalable (PWA) */
+    .btn-instalar{
+        width: 100%;
+        min-height: 46px;
+        margin-top: 14px;
+        border: 1.5px solid var(--tg-green);
+        border-radius: 11px;
+        background: #fff;
+        color: var(--tg-green-dark);
+        font-weight: 700;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        transition: all .2s ease;
+    }
+
+    .btn-instalar:hover{
+        background: #edf8f0;
+    }
+
+    .btn-instalar[hidden],
+    .guia-ios[hidden],
+    .app-instalada[hidden]{
+        display: none;
+    }
+
+    .btn-instalar img,
+    .app-instalada img{
+        width: 26px;
+        height: 26px;
+        object-fit: contain;
+    }
+
+    .guia-ios{
+        margin: 14px 0 0;
+        font-size: .85rem;
+        color: var(--tg-muted);
+        text-align: center;
+    }
+
+    .app-instalada{
+        margin-top: 14px;
+        padding: 8px 12px;
+        border-radius: 11px;
+        background: #edf8f0;
+        color: var(--tg-green-dark);
+        font-weight: 700;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
     .auth-status{
         border: 1px solid #badcc4;
         background: #edf8f0;
@@ -471,6 +527,25 @@ body{
                     </button>
 
                 </form>
+
+
+                {{-- App instalable: lo muestra/oculta public/js/instalar-taguay.js --}}
+                <button type="button" class="btn-instalar" data-instalar-taguay hidden>
+                    <img src="{{ asset('logos/ImgLogoCircular-SF-r.png') }}" alt="" aria-hidden="true">
+                    Instalar App Taguay
+                </button>
+
+                <p class="guia-ios" data-ios-taguay hidden>
+                    <i class="bi bi-phone me-1"></i>
+                    Para instalar en iPhone: tocá <strong>Compartir</strong>
+                    <i class="bi bi-box-arrow-up"></i> y luego
+                    <strong>Agregar a inicio</strong>.
+                </p>
+
+                <div class="app-instalada" data-app-taguay hidden>
+                    <img src="{{ asset('logos/ImgLogoCircular-SF-r.png') }}" alt="" aria-hidden="true">
+                    App Taguay
+                </div>
 
             </div>
 
