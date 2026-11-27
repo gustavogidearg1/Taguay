@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\WhatsApp\ConversacionAvance;
 use App\Services\WhatsApp\WhatsAppCliente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Webhook de WhatsApp (Cloud API de Meta).
@@ -12,8 +15,8 @@ use Illuminate\Support\Facades\Log;
  * GET  /webhook/whatsapp  → Meta verifica que la dirección es nuestra (una sola vez, al configurarla).
  * POST /webhook/whatsapp  → Meta avisa cada mensaje que llega al número.
  *
- * Fase 2: recibe, registra en storage/logs/whatsapp-*.log y responde un saludo.
- * Fase 3: acá se conecta la conversación guiada para cargar Avance de Campo.
+ * Recibe, registra en storage/logs/whatsapp-*.log y pasa cada mensaje a la conversación de carga.
+ * La conversación (máquina de estados) está en App\Services\WhatsApp\ConversacionAvance.
  */
 class WhatsAppWebhookController extends Controller
 {
@@ -44,7 +47,7 @@ class WhatsAppWebhookController extends Controller
      * Recepción de mensajes.
      * Siempre respondemos 200 rápido: si Meta no recibe 200, reintenta el aviso varias veces.
      */
-    public function recibir(Request $request, WhatsAppCliente $whatsapp)
+    public function recibir(Request $request, WhatsAppCliente $whatsapp, ConversacionAvance $conversacion)
     {
         if (! $this->firmaValida($request)) {
             Log::channel('whatsapp')->warning('Aviso con firma inválida: descartado.');
@@ -77,12 +80,26 @@ class WhatsAppWebhookController extends Controller
             'texto' => $texto,
         ]);
 
-        // Fase 2: respuesta de prueba para confirmar que el circuito completo funciona
-        $saludo = $nombre !== '' ? "¡Hola {$nombre}!" : '¡Hola!';
-        $whatsapp->enviarTexto(
-            $telefono,
-            "{$saludo} Soy el sistema Taguay 🌾\nRecibí tu mensaje: \"{$texto}\".\n\nPronto vas a poder cargar el Avance de Campo por acá."
-        );
+        // Meta puede reenviar el mismo aviso: cada mensaje se procesa una sola vez
+        if (! Cache::add('whatsapp_msg_' . ($mensaje['id'] ?? Str::random()), true, now()->addDay())) {
+            Log::channel('whatsapp')->debug('Mensaje repetido ignorado', ['id' => $mensaje['id'] ?? null]);
+            return response('OK', 200);
+        }
+
+        try {
+            $conversacion->procesar($telefono, [
+                'tipo' => $mensaje['type'] ?? null,
+                'texto' => $texto,
+                'id' => data_get($mensaje, 'interactive.button_reply.id') ?? data_get($mensaje, 'interactive.list_reply.id'),
+                'media_id' => data_get($mensaje, 'image.id'),
+                'latitud' => data_get($mensaje, 'location.latitude'),
+                'longitud' => data_get($mensaje, 'location.longitude'),
+            ]);
+        } catch (\Throwable $e) {
+            // Nunca dejamos a Meta sin respuesta 200 (si no, reintenta); el error queda en el log
+            Log::channel('whatsapp')->error('Error procesando el mensaje', ['error' => $e->getMessage(), 'archivo' => $e->getFile() . ':' . $e->getLine()]);
+            $whatsapp->enviarTexto($telefono, '⚠️ Hubo un problema al procesar tu mensaje. Probá de nuevo o escribí *cancelar*.');
+        }
 
         return response('OK', 200);
     }

@@ -79,16 +79,19 @@ class UserController extends Controller
     ========================== */
     public function store(Request $request)
     {
+        $this->normalizarTelefono($request);
+
         $data = $request->validate(array_merge([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ], $this->reglasAccesos()));
+        ], $this->reglasAccesos(), $this->reglasTelefono()), $this->mensajesTelefono());
 
         DB::transaction(function () use ($data) {
             $user = User::create([
                 'name'     => $data['name'],
                 'email'    => $data['email'],
+                'telefono_whatsapp' => $data['telefono_whatsapp'] ?? null,
                 'password' => Hash::make($data['password']),
             ]);
 
@@ -119,16 +122,18 @@ class UserController extends Controller
         // Así el autocompletado del navegador no obliga a cambiar la clave.
         $cambiarPassword = $request->boolean('cambiar_password');
 
+        $this->normalizarTelefono($request);
+
         $rules = array_merge([
             'name'  => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-        ], $this->reglasAccesos());
+        ], $this->reglasAccesos(), $this->reglasTelefono($user));
 
         if ($cambiarPassword) {
             $rules['password'] = ['required', 'confirmed', Rules\Password::defaults()];
         }
 
-        $data = $request->validate($rules);
+        $data = $request->validate($rules, $this->mensajesTelefono());
 
         // Evita que un admin se quite a sí mismo el rol de Administrador
         if ($user->is(auth()->user()) && ! in_array('admin', $data['roles'] ?? [], true)) {
@@ -139,6 +144,7 @@ class UserController extends Controller
             $update = [
                 'name'  => $data['name'],
                 'email' => $data['email'],
+                'telefono_whatsapp' => $data['telefono_whatsapp'] ?? null,
             ];
 
             if ($cambiarPassword) {
@@ -190,6 +196,33 @@ class UserController extends Controller
             'roles'            => Permisos::ROLES,
             'rolesDescripcion' => Permisos::ROLES_DESCRIPCION,
             'reportes'         => Permisos::REPORTES,
+        ];
+    }
+
+    /**
+     * El teléfono se guarda como lo identifica WhatsApp: solo dígitos con código de país.
+     * Se normaliza ANTES de validar, así la regla "unique" compara el mismo formato.
+     */
+    private function normalizarTelefono(Request $request): void
+    {
+        $request->merge(['telefono_whatsapp' => User::normalizarTelefono($request->input('telefono_whatsapp'))]);
+    }
+
+    private function reglasTelefono(?User $user = null): array
+    {
+        $unico = Rule::unique('users', 'telefono_whatsapp');
+        if ($user) {
+            $unico->ignore($user->id);
+        }
+
+        return ['telefono_whatsapp' => ['nullable', 'regex:/^\d{11,15}$/', $unico]];
+    }
+
+    private function mensajesTelefono(): array
+    {
+        return [
+            'telefono_whatsapp.regex'  => 'El teléfono debe tener código de país y área, por ejemplo +54 9 3534 191741.',
+            'telefono_whatsapp.unique' => 'Ese teléfono ya está asignado a otro usuario.',
         ];
     }
 

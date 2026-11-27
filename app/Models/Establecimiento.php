@@ -13,4 +13,10 @@ class Establecimiento extends Model
     {
         return $this->hasMany(Hacienda::class);
     }
+
+    /** Lotes del establecimiento (de todas las campañas). */
+    public function lotes()
+    {
+        return $this->hasMany(Lote::class);
+    }
 }

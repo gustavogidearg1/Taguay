@@ -46,14 +46,20 @@ class WhatsAppCliente
     }
 
     /**
-     * Lista desplegable (máximo 10 opciones en total).
+     * Lista desplegable (WhatsApp admite máximo 10 opciones en total).
      * $opciones = ['id_interno' => 'Título', ...]
+     *          o ['id_interno' => ['title' => 'Título', 'description' => 'Detalle'], ...]
      */
     public function enviarLista(string $para, string $texto, string $boton, array $opciones, string $seccion = 'Opciones'): bool
     {
         $filas = [];
-        foreach (array_slice($opciones, 0, 10, true) as $id => $titulo) {
-            $filas[] = ['id' => (string) $id, 'title' => mb_substr($titulo, 0, 24)];
+        foreach (array_slice($opciones, 0, 10, true) as $id => $opcion) {
+            $titulo = is_array($opcion) ? $opcion['title'] : $opcion;
+            $fila = ['id' => (string) $id, 'title' => mb_substr($titulo, 0, 24)];
+            if (is_array($opcion) && ! empty($opcion['description'])) {
+                $fila['description'] = mb_substr($opcion['description'], 0, 72);
+            }
+            $filas[] = $fila;
         }
 
         return $this->enviar($para, [
@@ -67,6 +73,33 @@ class WhatsAppCliente
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Descarga un archivo que mandó el usuario (foto, documento).
+     * Meta lo entrega en dos pasos: con el id se obtiene una URL temporal, y esa URL
+     * se descarga con el mismo token. Devuelve ['contenido' => binario, 'mime' => 'image/jpeg'] o null.
+     */
+    public function descargarMedia(string $mediaId): ?array
+    {
+        $cfg = config('services.whatsapp');
+
+        $info = Http::withToken($cfg['token'])->timeout(15)
+            ->get("https://graph.facebook.com/{$cfg['api_version']}/{$mediaId}");
+
+        if (! $info->successful() || ! $info->json('url')) {
+            Log::channel('whatsapp')->warning('No se pudo obtener la URL del archivo', ['media_id' => $mediaId, 'respuesta' => $info->json()]);
+            return null;
+        }
+
+        $archivo = Http::withToken($cfg['token'])->timeout(30)->get($info->json('url'));
+
+        if (! $archivo->successful()) {
+            Log::channel('whatsapp')->warning('No se pudo descargar el archivo', ['media_id' => $mediaId, 'estado_http' => $archivo->status()]);
+            return null;
+        }
+
+        return ['contenido' => $archivo->body(), 'mime' => (string) $info->json('mime_type', 'image/jpeg')];
     }
 
     /**

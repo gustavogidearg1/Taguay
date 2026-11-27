@@ -224,6 +224,42 @@ Lista de códigos de error de Meta: <https://developers.facebook.com/docs/whatsa
 |---|---|---|
 | 1. Cuenta, app y número de prueba en Meta | ✅ Hecho (23/11/2026) | Pasos 1 a 6 |
 | 2. Webhook: recibir y responder un saludo | ✅ Hecho (27/11/2026): responde por WhatsApp | Pasos 7 a 10 |
-| 3. Conversación guiada para cargar Avance de Campo | Próxima | Listas y botones: establecimiento → lote → cultivo → kg → ha → patente → confirmar |
-| 4. Teléfono en el ABM de usuarios, ubicación y fotos | Después | Cada encargado carga a su nombre |
-| 5. Producción | Al final | Número real, verificación y token permanente |
+| 3. Conversación guiada para cargar Avance de Campo | ✅ Código listo (27/11/2026) | Ver "Cómo funciona la carga" abajo |
+| 4. Teléfono en el ABM de usuarios, ubicación y fotos | ✅ Incluido en la fase 3 | Cada encargado carga a su nombre |
+| 5. Producción | Pendiente | Número real (línea nueva), verificación del negocio |
+
+---
+
+## Cómo funciona la carga (fase 3)
+
+Manual para el usuario final: `docs/manual/05-cargar-avance-por-whatsapp.md`.
+
+### Piezas del código
+
+| Archivo | Qué hace |
+|---|---|
+| `app/Services/WhatsApp/ConversacionAvance.php` | **Máquina de estados** de la conversación: qué preguntar, cómo validar cada respuesta, el resumen, corregir y guardar en `lote_estados`. |
+| `app/Models/WhatsAppSesion.php` + tabla `whatsapp_sesiones` | La "memoria": en qué **paso** está cada teléfono y qué **datos** ya respondió (JSON). La fila se borra al guardar o cancelar. |
+| `users.telefono_whatsapp` | Teléfono del usuario (solo dígitos, ej. `5493534191741`). Identifica quién carga. Se completa en el ABM de Usuarios. |
+| `WhatsAppWebhookController::recibir` | Ignora mensajes repetidos (Meta a veces reenvía) y le pasa cada mensaje a la conversación. |
+| `WhatsAppCliente` | Envía texto, botones (máx. 3) y listas (máx. 10 opciones; con "➡️ Ver más" se pagina). Descarga las fotos. |
+
+### Recorrido
+
+```
+avance → establecimiento → lote → cultivo → cantidad (kg) → superficie (ha)
+       → ¿datos del camión? [patente → chofer → número → humedad → propia/socio]
+       → ¿foto / ubicación? → resumen → Guardar | Corregir | Cancelar
+```
+
+Automáticos: campaña activa más reciente, fecha de hoy, estado *por defecto*, "Empresa" tildado (igual que la app) y la observación *"Cargado por WhatsApp."*.
+
+### Base de datos en el hosting
+
+Script: `database/sql/2026_11_27_whatsapp_carga.sql` (columna `telefono_whatsapp` y tabla `whatsapp_sesiones`).
+
+### Límites de WhatsApp que condicionan el diseño
+
+- Botones: máximo **3**, con títulos de hasta 20 caracteres.
+- Listas: máximo **10** opciones en total, con títulos de 24 y descripciones de 72 caracteres.
+- El sistema solo puede responder dentro de las **24 h** desde el último mensaje de la persona. En esta carga siempre escribe primero el usuario, así que no hay problema.

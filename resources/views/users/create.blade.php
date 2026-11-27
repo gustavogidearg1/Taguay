@@ -33,6 +33,20 @@
             @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
           </div>
 
+          {{-- Teléfono para cargar Avance de Campo por WhatsApp (ver docs/whatsapp/tutorial-whatsapp.md) --}}
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold"><i class="bi bi-whatsapp text-success me-1"></i> Teléfono WhatsApp</label>
+            <input type="tel"
+                   class="form-control @error('telefono_whatsapp') is-invalid @enderror"
+                   name="telefono_whatsapp"
+                   value="{{ old('telefono_whatsapp') }}"
+                   placeholder="+54 9 3534 191741"
+                   autocomplete="off">
+            @error('telefono_whatsapp') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <div class="form-text">Opcional. Habilita a este usuario a cargar el Avance de Campo por WhatsApp (necesita rol Agrícola).</div>
+          </div>
+          <div class="col-12 col-md-6 d-none d-md-block"></div>
+
           <div class="col-12 col-md-6">
             <label class="form-label fw-semibold">Contraseña</label>
             <input type="password"

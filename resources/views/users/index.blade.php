@@ -110,7 +110,14 @@
 
               <tr>
                 <td class="fw-semibold">{{ $user->name }}</td>
-                <td>{{ $user->email }}</td>
+                <td>
+                  {{ $user->email }}
+                  @if ($user->telefono_whatsapp)
+                    <div class="small text-success" title="Puede cargar Avance de Campo por WhatsApp">
+                      <i class="bi bi-whatsapp"></i> +{{ $user->telefono_whatsapp }}
+                    </div>
+                  @endif
+                </td>
 
                 <td>
                   @forelse ($userRoles as $r)
