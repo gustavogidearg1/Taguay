@@ -27,6 +27,7 @@ use App\Http\Controllers\LoteController;
 use App\Http\Controllers\EstadoCultivoController;
 use App\Http\Controllers\LoteEstadoController;
 use App\Http\Controllers\InvoiceImportController;
+use App\Http\Controllers\WhatsAppWebhookController;
 
 //Referencias
 use App\Http\Controllers\MonedaController;
@@ -44,6 +45,15 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+// Webhook de WhatsApp: lo llama Meta, por eso no lleva login.
+// La seguridad la dan el verify token (GET) y la firma X-Hub-Signature-256 (POST).
+// Excluido del CSRF en bootstrap/app.php. Ver docs/whatsapp/tutorial-whatsapp.md
+Route::get('/webhook/whatsapp', [WhatsAppWebhookController::class, 'verificar'])->name('whatsapp.verificar');
+Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'recibir'])->name('whatsapp.recibir');
+
+// Política de privacidad pública (la exige Meta para publicar la app de WhatsApp)
+Route::view('/politica-de-privacidad', 'legal.politica-privacidad')->name('politica-privacidad');
 
 // Públicas o generales (si querés que requieran login, movelas al group auth)
 Route::get('/getJsonData', [TaguayController::class, 'getJsonData'])->name('getJsonData');

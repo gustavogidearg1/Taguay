@@ -73,6 +73,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Registro de lo que entra y sale por WhatsApp (storage/logs/whatsapp-AAAA-MM-DD.log)
+        'whatsapp' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/whatsapp.log'),
+            'level' => 'debug',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
